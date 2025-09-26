@@ -1,0 +1,10 @@
+<?php
+$dbHost = getenv('MAIN_DB_HOST', 'localhost');
+$dbUser = getenv('MAIN_DB_USER', 'root');
+$dbPass = getenv('MAIN_DB_PASSWORD', '');
+$dbName = getenv('MAIN_DB_NAME', 'main_db');
+
+echo 'zdbHost: ' . $dbHost . '<br>';
+echo 'dbUser: ' . $dbUser . '<br>';
+echo 'dbPass: ' . $dbPass . '<br>';
+echo 'dbName: ' . $dbName . '<br>';

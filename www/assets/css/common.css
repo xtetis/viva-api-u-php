@@ -1,0 +1,18 @@
+.pc-container{
+    top: 0;
+}
+
+#container_show_message{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 50px;
+    background: #959595;
+    z-index: 999999999999999;
+    top: 0;
+    left: 0;
+    text-align: center;
+    padding-top: 10px;
+    color: #fff;
+    font-size: 1.2em;
+}

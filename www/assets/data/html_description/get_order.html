@@ -1,0 +1,109 @@
+<div class="container my-5">
+    <h1 class="mb-4">API: Получение заказа</h1>
+    <p class="lead">Этот API-эндпоинт позволяет получить информацию о заказе на основе переданного уникального идентификатора заказа (bulk_uuid) и формата ответа.</p>
+
+    <h2 class="mt-5">Эндпоинт</h2>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>URL:</strong> <code>https://fromtec-api-dev.vivadengi.ru/api/get_order</code></p>
+            <p><strong>Метод:</strong> POST</p>
+        </div>
+    </div>
+
+    <h2 class="mt-5">Тело запроса</h2>
+    <div class="card">
+        <div class="card-body">
+            <p>Тело запроса должно быть JSON-объектом, содержащим следующие поля:</p>
+            <ul>
+                <li><strong>bulk_uuid</strong> (строка, обязательно): Уникальный идентификатор заказа, полученный при создании заказа.</li>
+                <li><strong>return_as</strong> (строка, обязательно): Формат возвращаемых данных. Возможные значения:
+                    <ul>
+                        <li><code>json</code>: Данные возвращаются в формате JSON.</li>
+                        <li><code>file_xlsx</code>: Данные возвращаются в виде файла Excel.</li>
+                    </ul>
+                </li>
+            </ul>
+            <h5>Пример запроса</h5>
+            <pre class="bg-light p-3 rounded">
+{
+    "bulk_uuid": "6c97f35a-0f7a-457c-ae3c-020b266e9dd8",
+    "return_as": "json"
+}
+            </pre>
+        </div>
+    </div>
+
+    <h2 class="mt-5">Ответ</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5>Успешный ответ (return_as: json)</h5>
+            <p>Если запрос корректен и <code>return_as</code> установлен в <code>json</code>, ответ содержит детали заказа.</p>
+            <pre class="bg-light p-3 rounded">
+{
+    "result": 1,
+    "result_str": "OK",
+    "run_data": {
+        "request_headers": {
+            "Authorization": "***********",
+            "Content-Type": "application/json"
+        },
+        "request_url": "http://158.160.28.65:2333/get_order/?item=6c97f35a-0f7a-457c-ae3c-020b266e9dd8",
+        "response_body": "[{\"hash\":\"23f3530743036d78dfd17d130553c64b\",\"type\":\"new_calls\",\"tag_id\":\"1359\",\"tag_name\":\"Обещание оплаты\",\"phone_a\":\"74951650495\",\"phone_b\":\"79304141526\",\"user_id\":\"1\",\"duration\":\"73\",\"is_incoming\":\"false\",\"datetime_start\":\"2025-06-04 09:41:19\",\"agent_campaign_id\":\"3627\",\"id\":\"ca281716-718e-41e7-93a8-3cb0af93fd6e\",\"record_url\":\"https://panel-v2.smartdialogs.ru/downloads?call_uuid=ca281716-718e-41e7-93a8-3cb0af93fd6e\",\"io\":\"РОДИОН ВИКТОРОВИЧ\",\"fio\":\"КАРПЕНКО РОДИОН ВИКТОРОВИЧ\",\"Id_client\":\"2520103\",\"sum\":\"46.89\",\"sex\":\"M\",\"timezone\":\"3\",\"person\":\"Клиент\",\"stage\":\"Полный звонок\",\"call_transcript\":\"HUMAN: алло\\nBOT: Здравствуйте, меня зовут Виктор, я электронный ассистент компании ПАО МКК ЦФП Viva Деньги, наш разговор записывается. Карпенко Родион Викторович это вы, верно?\\nHUMAN: да это я круто что ты позвонил наконец\\nBOT: Спасибо за уточнение. Звоню вам по поводу просроченной задолженности. Сумма вашего долга составляет сорок шесть рублей восемьдесят девять копеек...\",\"attempt\":\"1\",\"answer\":\"200 OK\",\"bot_duration\":\"73\",\"MSK_datetime_start\":\"2025-06-04 12:40:36\"}]",
+        "response_http_code": 200,
+        "response_data": [
+            {
+                "hash": "23f3530743036d78dfd17d130553c64b",
+                "type": "new_calls",
+                "tag_id": "1359",
+                "tag_name": "Обещание оплаты",
+                "phone_a": "74951650495",
+                "phone_b": "79304141526",
+                "user_id": "1",
+                "duration": "73",
+                "is_incoming": "false",
+                "datetime_start": "2025-06-04 09:41:19",
+                "agent_campaign_id": "3627",
+                "id": "ca281716-718e-41e7-93a8-3cb0af93fd6e",
+                "record_url": "https://panel-v2.smartdialogs.ru/downloads?call_uuid=ca281716-718e-41e7-93a8-3cb0af93fd6e",
+                "io": "РОДИОН ВИКТОРОВИЧ",
+                "fio": "КАРПЕНКО РОДИОН ВИКТОРОВИЧ",
+                "Id_client": "2520103",
+                "sum": "46.89",
+                "sex": "M",
+                "timezone": "3",
+                "person": "Клиент",
+                "stage": "Полный звонок",
+                "call_transcript": "HUMAN: алло\nBOT: Здравствуйте, меня зовут Виктор, я электронный ассистент компании ПАО МКК ЦФП Viva Деньги, наш разговор записывается. Карпенко Родион Викторович это вы, верно?\nHUMAN: да это я круто что ты позвонил наконец\nBOT: Спасибо за уточнение. Звоню вам по поводу просроченной задолженности. Сумма вашего долга составляет сорок шесть рублей восемьдесят девять копеек...",
+                "attempt": "1",
+                "answer": "200 OK",
+                "bot_duration": "73",
+                "MSK_datetime_start": "2025-06-04 12:40:36"
+            }
+        ]
+    }
+}
+            </pre>
+
+            <h5>Успешный ответ (return_as: file_xlsx)</h5>
+            <p>Если <code>return_as</code> установлен в <code>file_xlsx</code>, ответом будет тело файла Excel с данными заказа.</p>
+
+            <h5>Ошибки</h5>
+            <p><strong>Некорректное поле bulk_uuid:</strong></p>
+            <pre class="bg-light p-3 rounded">
+{
+    "result": -1,
+    "result_str": "JSON validation error: Required property missing: bulk_uuid, data: {\"bulk_u_uid\":\"6c97f35a-0f7a-457c-ae3c-020b266e9dd8\",\"return_as\":\"file_xlsx\"}",
+    "run_data": []
+}
+            </pre>
+            <p><strong>Некорректное значение return_as:</strong></p>
+            <pre class="bg-light p-3 rounded">
+{
+    "result": -1,
+    "result_str": "Нода return_as должна быть одной из: json, file_xlsx",
+    "run_data": []
+}
+            </pre>
+        </div>
+    </div>
+</div>

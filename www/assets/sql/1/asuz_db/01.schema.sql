@@ -1,0 +1,8 @@
+CREATE SCHEMA api AUTHORIZATION postgres;
+
+
+-- Permissions
+
+GRANT ALL ON SCHEMA api TO postgres;
+
+GRANT USAGE ON SCHEMA api TO PUBLIC;

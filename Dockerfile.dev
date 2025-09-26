@@ -1,0 +1,27 @@
+# Базовый образ с PHP и Apache
+FROM php:8.2-apache
+
+# Установка необходимых расширений PHP
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql 
+
+# Установка Composer (если есть зависимости)
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Копирование файлов приложения
+WORKDIR /var/www/html
+
+
+# Установка зависимостей, если есть composer.json
+RUN if [ -f composer.json ]; then composer install --no-dev --optimize-autoloader; fi
+
+# Настройка прав для Apache
+RUN chown -R www-data:www-data /var/www/html \
+    && a2enmod rewrite
+
+# Открытие порта
+EXPOSE 80
+
+# Команда для запуска Apache
+CMD ["apache2-foreground"]

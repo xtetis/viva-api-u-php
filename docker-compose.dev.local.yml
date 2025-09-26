@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:80"
+    environment:
+      - API_DB_HOST=172.17.0.1 #Хост базы данных (обязательный параметр)
+      - API_DB_PORT=5432 #Порт базы данных (обязательный параметр)
+      - API_DB_DATABASE=api_db #Имя базы данных (обязательный параметр)
+      - API_DB_USERNAME=tetis #Логин базы данных (обязательный параметр)
+      - API_DB_PASSWORD=j3qq4h7h2v #Пароль базы данных (обязательный параметр)
+      - APP_DEBUG=true #Включить ли режим отладки (необязательный параметр)
+      - APP_SCHEME=http #Схема доступа к приложению (обязательный параметр)
+      - APP_ENABLE_HTTP_BASE_AUTH=0 #Включить ли базовую авторизацию для доступа к тестовым страницам (обязательный параметр)
+      - HTTP_BASE_LOGIN=admin #Логин базового пользователя (является обязательным параметром если включена базовая авторизация)
+      - HTTP_BASE_PASSWORD=5bde6a8e31ef61f98a40baf5eee31b08 #MD5 хэш пароля базового поль
+    volumes:
+      - ./www/:/var/www/html
+    restart: unless-stopped

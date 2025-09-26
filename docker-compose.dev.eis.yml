@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:80"
+    environment:
+      - API_DB_HOST=vd-dbeis-vip.vd.ru #Хост базы данных (обязательный параметр)
+      - API_DB_PORT=5432 #Порт базы данных (обязательный параметр)
+      - API_DB_DATABASE=eis_db #Имя базы данных (обязательный параметр)
+      - API_DB_USERNAME=eis_db_user #Логин базы данных (обязательный параметр)
+      - API_DB_PASSWORD=oeQi-[qu16qVX7jn #Пароль базы данных (обязательный параметр)
+      - APP_DEBUG=true #Включить ли режим отладки (необязательный параметр)
+      - APP_SCHEME=https #Схема доступа к приложению (обязательный параметр)
+      - APP_ENABLE_HTTP_BASE_AUTH=1 #Включить ли базовую авторизацию для доступа к тестовым страницам (обязательный параметр)
+      - HTTP_BASE_LOGIN=admin #Логин базового пользователя (является обязательным параметром если включена базовая авторизация)
+      - HTTP_BASE_PASSWORD=5bde6a8e31ef61f98a40baf5eee31b08 #MD5 хэш пароля базового пользователя (является обязательным параметром если включена базовая авторизация) (j3qq4h7h2v)
+    volumes:
+      - ./www/:/var/www/html
+      - ./log/:/var/log
+    restart: unless-stopped

@@ -2,6 +2,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: Dockerfile.dev
     ports:
       - "8080:80"
     environment:
@@ -15,4 +16,7 @@ services:
       - APP_ENABLE_HTTP_BASE_AUTH=1 #Включить ли базовую авторизацию для доступа к тестовым страницам (обязательный параметр)
       - HTTP_BASE_LOGIN=admin #Логин базового пользователя (является обязательным параметром если включена базовая авторизация)
       - HTTP_BASE_PASSWORD=5bde6a8e31ef61f98a40baf5eee31b08 #MD5 хэш пароля базового пользователя (является обязательным параметром если включена базовая авторизация) (j3qq4h7h2v)
-    image: xtetis/viva-api-u-php:latest
+    volumes:
+      - ./www/:/var/www/html
+      - ./log/:/var/log
+    restart: unless-stopped

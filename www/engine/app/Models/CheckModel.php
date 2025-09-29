@@ -28,21 +28,21 @@ class CheckModel extends BaseModel
         'api_db_host'                                  => [
             'title'      => 'Хост БД API (переменная окружения API_DB_HOST)',
             'value'      => '',
-            'show_value' => false,
+            'show_value' => true,
             'checked'    => 0,
             'prepared'   => 0, // Проводилась проверка
         ],
         'api_db_port'                                  => [
             'title'      => 'Порт БД API (переменная окружения API_DB_PORT)',
             'value'      => '',
-            'show_value' => false,
+            'show_value' => true,
             'checked'    => 0,
             'prepared'   => 0, // Проводилась проверка
         ],
         'api_db_database'                              => [
             'title'      => 'БД API (переменная окружения API_DB_DATABASE)',
             'value'      => '',
-            'show_value' => false,
+            'show_value' => true,
             'checked'    => 0,
             'prepared'   => 0, // Проводилась проверка
         ],

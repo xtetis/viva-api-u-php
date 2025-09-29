@@ -65,8 +65,336 @@ INSERT INTO api.external_connect_params (external_connect_param_key,created_on,d
 
 
 
+
+
 INSERT INTO api.methods (method_key,method_name,title,created_on,description,html_description,request_json_schema,require_request_body,test_form__show_file_upload_input,request_body_must_be_json,response_type) VALUES
-	 (8,'loanapp_review_5','Рассмотрение кредитной заявки','2025-09-25 20:30:24.127816','Рассмотрение кредитной заявки','<pre>
+	 (2,'test','Тестовый метод','2025-09-19 16:18:51.487','Описание тестового метода','s','',1,0,1,NULL),
+	 (10,'loan_docs_leasing','Формирование документов Лизинг','2025-09-25 20:35:49.892','Формирование документов Лизинг','<pre>
+    METHOD: loan_docs_leasing - Сформировать ссылки на документы по займу Лизинг
+
+    REQUEST:
+    {
+        "business-key": "abcdef-ghijklmop-qrstuv-wxyz", //бизнес-ключ процесса для отправки данных в бек-энд камунды
+        "agreed_loan_terms_id": "111224566" //
+    }
+    
+    HMAC: MD5(REQUEST, PASSWORD)
+    
+    RESPONSE:
+    {
+        "response":
+        {
+            "status": "SUCCESS/FAIL",
+            "message": ""
+        },
+    
+        "hmac": MD5(response, PASSWORD)
+    }
+</pre>','{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "business-key": {
+      "type": "string"
+    },
+    "agreed_loan_terms_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business-key",
+    "agreed_loan_terms_id"
+  ]
+}',1,0,1,'eis'),
+	 (3,'check_client_data','Метод проверки заявочных данных','2025-09-23 16:19:31.749','Метод проверки заявочных данных','<pre>
+	METHOD: check_client_data - Метод проверки заявочных данных
+	REQUEST:
+	{
+		"business-key": "abcdef-ghijklmop-qrstuv-wxyz", //бизнес-ключ процесса для отправки данных в бек-энд камунды
+		"req_sum": "40000.00", //сумма займа
+		"req_term": "12M", //срок займа
+		"lastname": "ИВАНОВ", //фамилия
+		"firstname": "ИВАН", //имя
+		"patronimic": "ИВАНОВИЧ", //отчество
+		"birthday": "01.01.2000", //дата рождения
+		"phone_mobile": "+79111111111", //мобильный телефон
+		"email": "ivanov1@mail.ru", //мобильный телефон
+		"inn": "12345678910", //инн
+		"gender": "M", //пол
+		"pass_serial": "2220", //серия паспорта
+		"pass_number": "000000", //номер паспорта
+		"pass_issuer": "Московским РОВД", //кем выдан паспорт
+		"pass_issuer_code": "111-111", //код подразделения
+		"pass_issue_date": "10.10.2005", //дата выдачи паспорта
+		"birthplace": "Москва", //место рождения
+		"reg_address": "Байконур г., ул. им Генерал-полковника А.А.Максимова, д. 12а, 123",
+		"fact_address": "Байконур г., ул. им Генерал-полковника А.А.Максимова, д. 12а, 123",
+		"family_status": "MARRIED", //семейное положение (справочник)
+		"emloyment_type": "EMPLOYED", // справочник dic_types_of_income
+		"organization_type": "COMMERCIAL_ORGANIZATION", // (справочник)
+		"company_occupation": "COMMERCE", // (справочник)
+		"position_type": "MANAGEMENT", // (справочник)
+		"last_work_term": "2Y_AND_MORE", // (справочник)
+		"monthly_income": "50000.00" //доход
+	}
+
+	HMAC: MD5(REQUEST, PASSWORD)
+
+	RESPONSE:
+	{
+		"response":
+		{
+			"status": "SUCCESS/FAIL",
+			"message": "",
+			"is_black_list": true, //false
+			"is_active_debt": true, //false
+			"is_debt_holiday": true //false
+		},
+		"hmac": MD5(response, PASSWORD)
+	}
+</pre>
+
+
+
+','{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "business-key": {
+      "type": "string"
+    },
+    "req_sum": {
+      "type": "string"
+    },
+    "req_term": {
+      "type": "string"
+    },
+    "lastname": {
+      "type": "string"
+    },
+    "firstname": {
+      "type": "string"
+    },
+    "patronimic": {
+      "type": "string"
+    },
+    "birthday": {
+      "type": "string"
+    },
+    "phone_mobile": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "inn": {
+      "type": "string"
+    },
+    "gender": {
+      "type": "string"
+    },
+    "pass_serial": {
+      "type": "string"
+    },
+    "pass_number": {
+      "type": "string"
+    },
+    "pass_issuer": {
+      "type": "string"
+    },
+    "pass_issuer_code": {
+      "type": "string"
+    },
+    "pass_issue_date": {
+      "type": "string"
+    },
+    "birthplace": {
+      "type": "string"
+    },
+    "reg_address": {
+      "type": "string"
+    },
+    "fact_address": {
+      "type": "string"
+    },
+    "family_status": {
+      "type": "string"
+    },
+    "emloyment_type": {
+      "type": "string"
+    },
+    "organization_type": {
+      "type": "string"
+    },
+    "company_occupation": {
+      "type": "string"
+    },
+    "position_type": {
+      "type": "string"
+    },
+    "last_work_term": {
+      "type": "string"
+    },
+    "monthly_income": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business-key",
+    "req_sum",
+    "req_term",
+    "lastname",
+    "firstname",
+    "birthday",
+    "phone_mobile",
+    "gender",
+    "pass_serial",
+    "pass_number",
+    "pass_issuer",
+    "pass_issuer_code",
+    "pass_issue_date",
+    "birthplace",
+    "reg_address",
+    "fact_address",
+    "family_status",
+    "emloyment_type",
+    "monthly_income"
+  ]
+}',1,0,1,'eis'),
+	 (7,'get_approved_for_transfer_2','Получить одобрение на перевод (кредитные риски)','2025-09-25 20:17:44.460','Получить одобрение на перевод (кредитные риски)','<pre>
+	METHOD: get_approved_for_transfer_2 - Получить одобрение на перевод (кредитные риски)
+	REQUEST:
+	{
+		"business-key": "abcdef-ghijklmop-qrstuv-wxyz", //бизнес-ключ процесса для отправки данных в бек-энд камунды
+		"transfer_sum": "15000.00", //сумма перевода
+		"lastname": "Иванов", // фамилия
+		"firstname": "Иван", // имя
+		"patronimic": "Иванович", // отчество
+		"birthday": "10.10.1985", // дата рождения
+		"gender": "M", //Пол, M-Мужской, F-Женский
+		"phone_mobile": "+79111111111", //номер мобильного телефона
+		"email": "ivanov@mail.ru", //почта
+		"snils": "111-111-111 11", //снилс
+		"inn": "123456789123", //ИНН
+		"pass_serial": "0000", //серия паспорта
+		"pass_number": "000000", //номер паспорта
+		"pass_issuer_code": "111-111", //код подразделения
+		"payment_method_id": "SBP", // (card/sbp/и т.д.)
+		"card_mask": "111222******23333", //маска карты
+		"card_expiration_date": "12/24", //срок действия карты
+		"gateway_name": "Монета", //наименование шлюза 
+		"card_token": "dfsd454asd5", // токен карты
+		"sbp_bank_key": "100000234400055",
+		"pam_fio": "IVANOV",
+		"full_identification": "SUCCESS",
+		"agreed_loan_terms_id": "111224566"
+	}
+
+	HMAC: MD5(REQUEST, PASSWORD)
+
+	RESPONSE:
+	{
+		"response":
+		{
+			"status": "SUCCESS/FAIL",
+			"message": "",
+			"result": "APPROVE_LAUNCHED" // INCORRECT_LOAN_TERMS_ID
+		},
+		"hmac": MD5(response, PASSWORD)
+	}
+</pre>
+
+
+
+','{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "business-key": {
+      "type": "string"
+    },
+    "transfer_sum": {
+      "type": "string"
+    },
+    "lastname": {
+      "type": "string"
+    },
+    "firstname": {
+      "type": "string"
+    },
+    "patronimic": {
+      "type": "string"
+    },
+    "birthday": {
+      "type": "string"
+    },
+    "gender": {
+      "type": "string"
+    },
+    "phone_mobile": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "snils": {
+      "type": "string"
+    },
+    "inn": {
+      "type": "string"
+    },
+    "pass_serial": {
+      "type": "string"
+    },
+    "pass_number": {
+      "type": "string"
+    },
+    "pass_issuer_code": {
+      "type": "string"
+    },
+    "payment_method_id": {
+      "type": "string"
+    },
+    "card_mask": {
+      "type": "string"
+    },
+    "card_expiration_date": {
+      "type": "string"
+    },
+    "gateway_name": {
+      "type": "string"
+    },
+    "card_token": {
+      "type": "string"
+    },
+    "sbp_bank_key": {
+      "type": "string"
+    },
+    "pam_fio": {
+      "type": "string"
+    },
+    "full_identification": {
+      "type": "string"
+    },
+    "agreed_loan_terms_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business-key",
+    "transfer_sum",
+    "lastname",
+    "firstname",
+    "birthday",
+    "gender",
+    "phone_mobile",
+    "pass_serial",
+    "pass_number",
+    "pass_issuer_code",
+    "agreed_loan_terms_id"
+  ]
+}',1,0,1,'eis'),
+	 (8,'loanapp_review_5','Рассмотрение кредитной заявки','2025-09-25 20:30:24.127','Рассмотрение кредитной заявки','<pre>
 	METHOD: loanapp_review_5 - Рассмотрение кредитной заявки
 	REQUEST:
 	{
@@ -339,7 +667,7 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
       "type": "string"
     },
     "req_sum": {
-      "type": "string"
+      "type": "number"
     },
     "req_term": {
       "type": "string"
@@ -917,7 +1245,7 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
       "type": "string"
     },
     "monthly_income": {
-      "type": "string"
+      "type": "number"
     },
     "loan_purpose": {
       "type": "string"
@@ -929,7 +1257,7 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
       "type": "string"
     },
     "esia_flag": {
-      "type": "string"
+      "type": "integer"
     },
     "device_type": {
       "type": "string"
@@ -986,39 +1314,28 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
         "rus_standart_md5",
         "service_agreement_md5"
       ]
+    },
+    "card_mask": {
+      "type": "string"
+    },
+    "card_expiration_date": {
+      "type": "string"
+    },
+    "gateway_name": {
+      "type": "string"
+    },
+    "card_token": {
+      "type": "string"
     }
   },
   "required": [
     "business-key",
-    "source_id",
-    "wm_id",
-    "click_id",
-    "offer_id",
-    "source_id_last",
-    "wm_id_last",
-    "click_id_last",
-    "offer_id_last",
-    "utm_medium",
-    "utm_campaign",
-    "utm_term",
-    "utm_content",
-    "utm_medium_last",
-    "utm_campaign_last",
-    "utm_term_last",
-    "utm_content_last",
     "req_sum",
     "req_term",
     "lastname",
     "firstname",
-    "patronimic",
     "birthday",
     "phone_mobile",
-    "email",
-    "snils",
-    "inn",
-    "inn_result",
-    "uprid_result",
-    "uprid_channel",
     "gender",
     "pass_serial",
     "pass_number",
@@ -1026,208 +1343,16 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
     "pass_issuer_code",
     "pass_issue_date",
     "birthplace",
-    "reg_address_full",
-    "reg_region",
-    "reg_region_key",
-    "reg_city",
-    "reg_city_key",
-    "reg_settlement",
-    "reg_settlement_key",
-    "reg_street",
-    "reg_street_key",
-    "reg_house",
-    "reg_housing",
-    "reg_building",
-    "reg_flat",
     "family_status",
     "emloyment_type",
-    "organization_type",
-    "company_occupation",
-    "position_type",
-    "last_work_term",
     "monthly_income",
     "loan_purpose",
     "litigation",
     "bankruptcy",
-    "esia_flag",
-    "device_type",
-    "client_ip",
-    "device_system",
-    "browser",
-    "browser_version",
-    "cession_of_claims_agreed",
-    "additional_income",
-    "full_identification_result",
-    "vcid",
-    "clicked_from",
-    "juicy_session_id",
     "agreemets_part2_md5"
   ]
 }',1,0,1,'eis'),
-	 (2,'test','Тестовый метод','2025-09-19 16:18:51.487755','Описание тестового метода','s','',1,0,1,NULL),
-	 (3,'check_client_data','Метод проверки заявочных данных','2025-09-23 16:19:31.749542','Метод проверки заявочных данных','<pre>
-	METHOD: check_client_data - Метод проверки заявочных данных
-	REQUEST:
-	{
-		"business-key": "abcdef-ghijklmop-qrstuv-wxyz", //бизнес-ключ процесса для отправки данных в бек-энд камунды
-		"req_sum": "40000.00", //сумма займа
-		"req_term": "12M", //срок займа
-		"lastname": "ИВАНОВ", //фамилия
-		"firstname": "ИВАН", //имя
-		"patronimic": "ИВАНОВИЧ", //отчество
-		"birthday": "01.01.2000", //дата рождения
-		"phone_mobile": "+79111111111", //мобильный телефон
-		"email": "ivanov1@mail.ru", //мобильный телефон
-		"inn": "12345678910", //инн
-		"gender": "M", //пол
-		"pass_serial": "2220", //серия паспорта
-		"pass_number": "000000", //номер паспорта
-		"pass_issuer": "Московским РОВД", //кем выдан паспорт
-		"pass_issuer_code": "111-111", //код подразделения
-		"pass_issue_date": "10.10.2005", //дата выдачи паспорта
-		"birthplace": "Москва", //место рождения
-		"reg_address": "Байконур г., ул. им Генерал-полковника А.А.Максимова, д. 12а, 123",
-		"fact_address": "Байконур г., ул. им Генерал-полковника А.А.Максимова, д. 12а, 123",
-		"family_status": "MARRIED", //семейное положение (справочник)
-		"emloyment_type": "EMPLOYED", // справочник dic_types_of_income
-		"organization_type": "COMMERCIAL_ORGANIZATION", // (справочник)
-		"company_occupation": "COMMERCE", // (справочник)
-		"position_type": "MANAGEMENT", // (справочник)
-		"last_work_term": "2Y_AND_MORE", // (справочник)
-		"monthly_income": "50000.00" //доход
-	}
-
-	HMAC: MD5(REQUEST, PASSWORD)
-
-	RESPONSE:
-	{
-		"response":
-		{
-			"status": "SUCCESS/FAIL",
-			"message": "",
-			"is_black_list": true, //false
-			"is_active_debt": true, //false
-			"is_debt_holiday": true //false
-		},
-		"hmac": MD5(response, PASSWORD)
-	}
-</pre>
-
-
-
-','{
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "business-key": {
-      "type": "string"
-    },
-    "req_sum": {
-      "type": "string"
-    },
-    "req_term": {
-      "type": "string"
-    },
-    "lastname": {
-      "type": "string"
-    },
-    "firstname": {
-      "type": "string"
-    },
-    "patronimic": {
-      "type": "string"
-    },
-    "birthday": {
-      "type": "string"
-    },
-    "phone_mobile": {
-      "type": "string"
-    },
-    "email": {
-      "type": "string"
-    },
-    "inn": {
-      "type": "string"
-    },
-    "gender": {
-      "type": "string"
-    },
-    "pass_serial": {
-      "type": "string"
-    },
-    "pass_number": {
-      "type": "string"
-    },
-    "pass_issuer": {
-      "type": "string"
-    },
-    "pass_issuer_code": {
-      "type": "string"
-    },
-    "pass_issue_date": {
-      "type": "string"
-    },
-    "birthplace": {
-      "type": "string"
-    },
-    "reg_address": {
-      "type": "string"
-    },
-    "fact_address": {
-      "type": "string"
-    },
-    "family_status": {
-      "type": "string"
-    },
-    "emloyment_type": {
-      "type": "string"
-    },
-    "organization_type": {
-      "type": "string"
-    },
-    "company_occupation": {
-      "type": "string"
-    },
-    "position_type": {
-      "type": "string"
-    },
-    "last_work_term": {
-      "type": "string"
-    },
-    "monthly_income": {
-      "type": "string"
-    }
-  },
-  "required": [
-    "business-key",
-    "req_sum",
-    "req_term",
-    "lastname",
-    "firstname",
-    "patronimic",
-    "birthday",
-    "phone_mobile",
-    "email",
-    "inn",
-    "gender",
-    "pass_serial",
-    "pass_number",
-    "pass_issuer",
-    "pass_issuer_code",
-    "pass_issue_date",
-    "birthplace",
-    "reg_address",
-    "fact_address",
-    "family_status",
-    "emloyment_type",
-    "organization_type",
-    "company_occupation",
-    "position_type",
-    "last_work_term",
-    "monthly_income"
-  ]
-}',1,0,1,'eis'),
-	 (9,'loanapp_review_leasing','Рассмотрение кредитной заявки Лизинг','2025-09-25 20:32:15.097436','Рассмотрение кредитной заявки Лизинг','<pre>
+	 (9,'loanapp_review_leasing','Рассмотрение кредитной заявки Лизинг','2025-09-25 20:32:15.097','Рассмотрение кредитной заявки Лизинг','<pre>
 	METHOD: loanapp_review_leasing - Рассмотрение кредитной заявки Лизинг
 	REQUEST:
 	{
@@ -2147,267 +2272,16 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
         "rus_standart_md5",
         "service_agreement_md5"
       ]
-    }
-  },
-  "required": [
-    "business-key",
-    "source_id",
-    "wm_id",
-    "click_id",
-    "offer_id",
-    "source_id_last",
-    "wm_id_last",
-    "click_id_last",
-    "offer_id_last",
-    "utm_medium",
-    "utm_campaign",
-    "utm_term",
-    "utm_content",
-    "utm_medium_last",
-    "utm_campaign_last",
-    "utm_term_last",
-    "utm_content_last",
-    "req_sum",
-    "req_term",
-    "lastname",
-    "firstname",
-    "patronimic",
-    "birthday",
-    "phone_mobile",
-    "email",
-    "snils",
-    "inn",
-    "inn_result",
-    "uprid_result",
-    "uprid_channel",
-    "gender",
-    "pass_serial",
-    "pass_number",
-    "pass_issuer",
-    "pass_issuer_code",
-    "pass_issue_date",
-    "birthplace",
-    "reg_address_full",
-    "reg_region",
-    "reg_region_key",
-    "reg_city",
-    "reg_city_key",
-    "reg_settlement",
-    "reg_settlement_key",
-    "reg_street",
-    "reg_street_key",
-    "reg_house",
-    "reg_housing",
-    "reg_building",
-    "reg_flat",
-    "family_status",
-    "emloyment_type",
-    "organization_type",
-    "company_occupation",
-    "position_type",
-    "last_work_term",
-    "monthly_income",
-    "loan_purpose",
-    "litigation",
-    "bankruptcy",
-    "esia_flag",
-    "device_type",
-    "client_ip",
-    "device_system",
-    "browser",
-    "browser_version",
-    "cession_of_claims_agreed",
-    "additional_income",
-    "full_identification_result",
-    "vcid",
-    "clicked_from",
-    "juicy_session_id",
-    "agreemets_part2_md5"
-  ]
-}',1,0,1,'eis'),
-	 (7,'get_approved_for_transfer_2','Получить одобрение на перевод (кредитные риски)','2025-09-25 20:17:44.460373','Получить одобрение на перевод (кредитные риски)','<pre>
-	METHOD: get_approved_for_transfer_2 - Получить одобрение на перевод (кредитные риски)
-	REQUEST:
-	{
-		"business-key": "abcdef-ghijklmop-qrstuv-wxyz", //бизнес-ключ процесса для отправки данных в бек-энд камунды
-		"transfer_sum": "15000.00", //сумма перевода
-		"lastname": "Иванов", // фамилия
-		"firstname": "Иван", // имя
-		"patronimic": "Иванович", // отчество
-		"birthday": "10.10.1985", // дата рождения
-		"gender": "M", //Пол, M-Мужской, F-Женский
-		"phone_mobile": "+79111111111", //номер мобильного телефона
-		"email": "ivanov@mail.ru", //почта
-		"snils": "111-111-111 11", //снилс
-		"inn": "123456789123", //ИНН
-		"pass_serial": "0000", //серия паспорта
-		"pass_number": "000000", //номер паспорта
-		"pass_issuer_code": "111-111", //код подразделения
-		"payment_method_id": "SBP", // (card/sbp/и т.д.)
-		"card_mask": "111222******23333", //маска карты
-		"card_expiration_date": "12/24", //срок действия карты
-		"gateway_name": "Монета", //наименование шлюза 
-		"card_token": "dfsd454asd5", // токен карты
-		"sbp_bank_key": "100000234400055",
-		"pam_fio": "IVANOV",
-		"full_identification": "SUCCESS",
-		"agreed_loan_terms_id": "111224566"
-	}
-
-	HMAC: MD5(REQUEST, PASSWORD)
-
-	RESPONSE:
-	{
-		"response":
-		{
-			"status": "SUCCESS/FAIL",
-			"message": "",
-			"result": "APPROVE_LAUNCHED" // INCORRECT_LOAN_TERMS_ID
-		},
-		"hmac": MD5(response, PASSWORD)
-	}
-</pre>
-
-
-
-','{
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "business-key": {
-      "type": "string"
-    },
-    "transfer_sum": {
-      "type": "string"
-    },
-    "lastname": {
-      "type": "string"
-    },
-    "firstname": {
-      "type": "string"
-    },
-    "patronimic": {
-      "type": "string"
-    },
-    "birthday": {
-      "type": "string"
-    },
-    "gender": {
-      "type": "string"
-    },
-    "phone_mobile": {
-      "type": "string"
-    },
-    "email": {
-      "type": "string"
-    },
-    "snils": {
-      "type": "string"
-    },
-    "inn": {
-      "type": "string"
-    },
-    "pass_serial": {
-      "type": "string"
-    },
-    "pass_number": {
-      "type": "string"
-    },
-    "pass_issuer_code": {
-      "type": "string"
-    },
-    "payment_method_id": {
-      "type": "string"
-    },
-    "card_mask": {
-      "type": "string"
-    },
-    "card_expiration_date": {
-      "type": "string"
-    },
-    "gateway_name": {
-      "type": "string"
-    },
-    "card_token": {
-      "type": "string"
-    },
-    "sbp_bank_key": {
-      "type": "string"
-    },
-    "pam_fio": {
-      "type": "string"
-    },
-    "full_identification": {
-      "type": "string"
     },
     "agreed_loan_terms_id": {
       "type": "string"
     }
   },
   "required": [
-    "business-key",
-    "transfer_sum",
-    "lastname",
-    "firstname",
-    "patronimic",
-    "birthday",
-    "gender",
-    "phone_mobile",
-    "email",
-    "snils",
-    "inn",
-    "pass_serial",
-    "pass_number",
-    "pass_issuer_code",
-    "payment_method_id",
-    "card_mask",
-    "card_expiration_date",
-    "gateway_name",
-    "card_token",
-    "sbp_bank_key",
-    "pam_fio",
-    "full_identification",
-    "agreed_loan_terms_id"
+    "business-key"
   ]
 }',1,0,1,'eis'),
-	 (10,'loan_docs_leasing','Формирование документов Лизинг','2025-09-25 20:35:49.892909','Формирование документов Лизинг','<pre>
-    METHOD: loan_docs_leasing - Сформировать ссылки на документы по займу Лизинг
-
-    REQUEST:
-    {
-        "business-key": "abcdef-ghijklmop-qrstuv-wxyz", //бизнес-ключ процесса для отправки данных в бек-энд камунды
-        "agreed_loan_terms_id": "111224566" //
-    }
-    
-    HMAC: MD5(REQUEST, PASSWORD)
-    
-    RESPONSE:
-    {
-        "response":
-        {
-            "status": "SUCCESS/FAIL",
-            "message": ""
-        },
-    
-        "hmac": MD5(response, PASSWORD)
-    }
-</pre>','{
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "business-key": {
-      "type": "string"
-    },
-    "agreed_loan_terms_id": {
-      "type": "string"
-    }
-  },
-  "required": [
-    "business-key",
-    "agreed_loan_terms_id"
-  ]
-}',1,0,1,'eis'),
-	 (11,'loan_finalization_leasing','Финализация выдачи займа Лизинг','2025-09-25 20:38:52.856093','Финализация выдачи займа Лизинг','<pre>
+	 (11,'loan_finalization_leasing','Финализация выдачи займа Лизинг','2025-09-25 20:38:52.856','Финализация выдачи займа Лизинг','<pre>
     METHOD: loan_finalization_leasing - Финализация выдачи займа Лизинг
 	REQUEST:
     {
@@ -2478,17 +2352,7 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
         "sign_docs_receive_code_dt": {
           "type": "string"
         }
-      },
-      "required": [
-        "phone_number",
-        "phone_approval_send_dt",
-        "phone_approval_code",
-        "phone_approval_receive_code_dt",
-        "phone_number_sign",
-        "sign_docs_send_dt",
-        "sign_docs_code",
-        "sign_docs_receive_code_dt"
-      ]
+      }
     },
     "payment_info": {
       "type": "string"
@@ -2496,12 +2360,10 @@ INSERT INTO api.methods (method_key,method_name,title,created_on,description,htm
   },
   "required": [
     "business-key",
-    "agreed_loan_terms_id",
-    "transfer_money_dt",
-    "loan_issue_fact",
-    "payment_info"
+    "agreed_loan_terms_id"
   ]
 }',1,0,1,'eis');
+
 
 
 

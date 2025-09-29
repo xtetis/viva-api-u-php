@@ -77,6 +77,7 @@ DECLARE
 <history_list>
     <item><date_m>27.06.2024</date_m><task_n>35054374</task_n><author>Крупская И.Е.</author></item>
     <item><date_m>24.09.2025</date_m><task_n>Unknown</task_n><author>Updated for JSON processing</author></item>
+    <item><date_m>26.09.2025</date_m><task_n>Unknown</task_n><author>Updated for NULL handling</author></item>
 </history_list>*/
     v_json JSONB; -- Переменная для хранения входного JSON
     v_business_key VARCHAR;
@@ -134,41 +135,44 @@ BEGIN
             ), 
             v_context
         );
+        response = jsonb_build_object(
+            'error', 'Ошибка парсинга JSON: ' || SQLERRM
+        )::VARCHAR;
         RETURN;
     END;
 
-    -- Извлечение данных из JSON
-    v_business_key = v_json->>'business-key';
-    v_req_sum = (v_json->>'req_sum')::NUMERIC;
-    v_req_term = v_json->>'req_term';
-    v_lastname = v_json->>'lastname';
-    v_firstname = v_json->>'firstname';
-    v_patronimic = v_json->>'patronimic';
-    v_birthday = (v_json->>'birthday')::DATE;
-    v_phone_mobile = v_json->>'phone_mobile';
-    v_email = v_json->>'email';
-    v_inn = v_json->>'inn';
-    v_gender = v_json->>'gender';
-    v_pass_serial = v_json->>'pass_serial';
-    v_pass_number = v_json->>'pass_number';
-    v_pass_issuer = v_json->>'pass_issuer';
-    v_pass_issuer_code = v_json->>'pass_issuer_code';
-    v_pass_issue_date = (v_json->>'pass_issue_date')::DATE;
-    v_birthplace = v_json->>'birthplace';
-    v_reg_address = v_json->>'reg_address';
-    v_fact_address = v_json->>'fact_address';
-    v_family_status = v_json->>'family_status';
-    v_emloyment_type = v_json->>'emloyment_type';
-    v_organization_type = v_json->>'organization_type';
-    v_company_occupation = v_json->>'company_occupation';
-    v_position_type = v_json->>'position_type';
-    v_last_work_term = v_json->>'last_work_term';
-    v_monthly_income = (v_json->>'monthly_income')::NUMERIC;
+    -- Извлечение данных из JSON с учетом NULL для отсутствующих нод и сохранением пустых строк
+    v_business_key = CASE WHEN v_json ? 'business-key' THEN v_json->>'business-key' ELSE NULL END;
+    v_req_sum = CASE WHEN v_json ? 'req_sum' THEN NULLIF(v_json->>'req_sum', '')::NUMERIC ELSE NULL END;
+    v_req_term = CASE WHEN v_json ? 'req_term' THEN v_json->>'req_term' ELSE NULL END;
+    v_lastname = CASE WHEN v_json ? 'lastname' THEN v_json->>'lastname' ELSE NULL END;
+    v_firstname = CASE WHEN v_json ? 'firstname' THEN v_json->>'firstname' ELSE NULL END;
+    v_patronimic = CASE WHEN v_json ? 'patronimic' THEN v_json->>'patronimic' ELSE NULL END;
+    v_birthday = CASE WHEN v_json ? 'birthday' THEN NULLIF(v_json->>'birthday', '')::DATE ELSE NULL END;
+    v_phone_mobile = CASE WHEN v_json ? 'phone_mobile' THEN v_json->>'phone_mobile' ELSE NULL END;
+    v_email = CASE WHEN v_json ? 'email' THEN v_json->>'email' ELSE NULL END;
+    v_inn = CASE WHEN v_json ? 'inn' THEN v_json->>'inn' ELSE NULL END;
+    v_gender = CASE WHEN v_json ? 'gender' THEN v_json->>'gender' ELSE NULL END;
+    v_pass_serial = CASE WHEN v_json ? 'pass_serial' THEN v_json->>'pass_serial' ELSE NULL END;
+    v_pass_number = CASE WHEN v_json ? 'pass_number' THEN v_json->>'pass_number' ELSE NULL END;
+    v_pass_issuer = CASE WHEN v_json ? 'pass_issuer' THEN v_json->>'pass_issuer' ELSE NULL END;
+    v_pass_issuer_code = CASE WHEN v_json ? 'pass_issuer_code' THEN v_json->>'pass_issuer_code' ELSE NULL END;
+    v_pass_issue_date = CASE WHEN v_json ? 'pass_issue_date' THEN NULLIF(v_json->>'pass_issue_date', '')::DATE ELSE NULL END;
+    v_birthplace = CASE WHEN v_json ? 'birthplace' THEN v_json->>'birthplace' ELSE NULL END;
+    v_reg_address = CASE WHEN v_json ? 'reg_address' THEN v_json->>'reg_address' ELSE NULL END;
+    v_fact_address = CASE WHEN v_json ? 'fact_address' THEN v_json->>'fact_address' ELSE NULL END;
+    v_family_status = CASE WHEN v_json ? 'family_status' THEN v_json->>'family_status' ELSE NULL END;
+    v_emloyment_type = CASE WHEN v_json ? 'emloyment_type' THEN v_json->>'emloyment_type' ELSE NULL END;
+    v_organization_type = CASE WHEN v_json ? 'organization_type' THEN v_json->>'organization_type' ELSE NULL END;
+    v_company_occupation = CASE WHEN v_json ? 'company_occupation' THEN v_json->>'company_occupation' ELSE NULL END;
+    v_position_type = CASE WHEN v_json ? 'position_type' THEN v_json->>'position_type' ELSE NULL END;
+    v_last_work_term = CASE WHEN v_json ? 'last_work_term' THEN v_json->>'last_work_term' ELSE NULL END;
+    v_monthly_income = CASE WHEN v_json ? 'monthly_income' THEN NULLIF(v_json->>'monthly_income', '')::NUMERIC ELSE NULL END;
 
     -- Проверка обязательных полей
-    IF COALESCE(v_lastname, '') = '' OR COALESCE(v_req_sum, 0) = 0
-        OR COALESCE(v_firstname, '') = '' OR COALESCE(v_pass_serial, '') = ''
-        OR COALESCE(v_pass_number, '') = '' THEN
+    IF v_lastname IS NULL OR v_req_sum IS NULL
+        OR v_firstname IS NULL OR v_pass_serial IS NULL
+        OR v_pass_number IS NULL THEN
         result = -1;
         result_str = 'Ошибка: обязательные поля не заполнены';
         response = jsonb_build_object(
@@ -183,18 +187,18 @@ BEGIN
     v_is_debt_holiday = 'false';
 
     -- Обработка кода подразделения паспорта
-    IF v_pass_issuer_code !~* '^\d+$' THEN
+    IF v_pass_issuer_code IS NOT NULL AND v_pass_issuer_code !~* '^\d+$' THEN
         v_pass_issuer_code = REPLACE(v_pass_issuer_code, ' ', '');
         v_pass_issuer_code = REPLACE(v_pass_issuer_code, '-', '');
         v_pass_issuer_code = REPLACE(v_pass_issuer_code, '_', '');
 
-        IF char_length(v_pass_issuer_code) = 6 THEN
-            v_pass_issuer_code = left(v_pass_issuer_code, 3) || '-' || right(v_pass_issuer_code, 3);
+        IF CHAR_LENGTH(v_pass_issuer_code) = 6 THEN
+            v_pass_issuer_code = LEFT(v_pass_issuer_code, 3) || '-' || RIGHT(v_pass_issuer_code, 3);
         END IF;
     END IF;
 
     -- Обработка номера телефона
-    IF length(v_phone_mobile) = 10 THEN
+    IF v_phone_mobile IS NOT NULL AND LENGTH(v_phone_mobile) = 10 THEN
         v_phone_mobile = '+7' || v_phone_mobile;
     END IF;
 
@@ -427,42 +431,45 @@ BEGIN
             ), 
             v_context
         );
+        response = jsonb_build_object(
+            'error', 'Ошибка парсинга JSON: ' || SQLERRM
+        )::VARCHAR;
         RETURN;
     END;
 
-    -- Извлечение данных из JSON
-    v_business_key = v_json->>'business-key';
-    v_transfer_sum = (v_json->>'transfer_sum')::NUMERIC;
-    v_lastname = v_json->>'lastname';
-    v_firstname = v_json->>'firstname';
-    v_patronimic = v_json->>'patronimic';
-    v_birthday = (v_json->>'birthday')::DATE;
-    v_gender = v_json->>'gender';
-    v_phone_mobile = v_json->>'phone_mobile';
-    v_email = v_json->>'email';
-    v_snils = v_json->>'snils';
-    v_inn = v_json->>'inn';
-    v_pass_serial = v_json->>'pass_serial';
-    v_pass_number = v_json->>'pass_number';
-    v_pass_issuer_code = v_json->>'pass_issuer_code';
-    v_payment_method_id = v_json->>'payment_method_id';
-    v_card_mask = v_json->>'card_mask';
-    v_card_expiration_date = v_json->>'card_expiration_date';
-    v_gateway_name = v_json->>'gateway_name';
-    v_card_token = v_json->>'card_token';
-    v_sbp_bank_key = v_json->>'sbp_bank_key';
-    v_pam_fio = v_json->>'pam_fio';
-    v_full_identification = COALESCE(v_json->>'full_identification', '');
-    v_tmp_permissible_loan_key = (v_json->>'agreed_loan_terms_id')::BIGINT;
+    -- Извлечение данных из JSON с учетом NULL для отсутствующих нод и сохранением пустых строк
+    v_business_key = CASE WHEN v_json ? 'business-key' THEN v_json->>'business-key' ELSE NULL END;
+    v_transfer_sum = CASE WHEN v_json ? 'transfer_sum' THEN NULLIF(v_json->>'transfer_sum', '')::NUMERIC ELSE NULL END;
+    v_lastname = CASE WHEN v_json ? 'lastname' THEN v_json->>'lastname' ELSE NULL END;
+    v_firstname = CASE WHEN v_json ? 'firstname' THEN v_json->>'firstname' ELSE NULL END;
+    v_patronimic = CASE WHEN v_json ? 'patronimic' THEN v_json->>'patronimic' ELSE NULL END;
+    v_birthday = CASE WHEN v_json ? 'birthday' THEN NULLIF(v_json->>'birthday', '')::DATE ELSE NULL END;
+    v_gender = CASE WHEN v_json ? 'gender' THEN v_json->>'gender' ELSE NULL END;
+    v_phone_mobile = CASE WHEN v_json ? 'phone_mobile' THEN v_json->>'phone_mobile' ELSE NULL END;
+    v_email = CASE WHEN v_json ? 'email' THEN v_json->>'email' ELSE NULL END;
+    v_snils = CASE WHEN v_json ? 'snils' THEN v_json->>'snils' ELSE NULL END;
+    v_inn = CASE WHEN v_json ? 'inn' THEN v_json->>'inn' ELSE NULL END;
+    v_pass_serial = CASE WHEN v_json ? 'pass_serial' THEN v_json->>'pass_serial' ELSE NULL END;
+    v_pass_number = CASE WHEN v_json ? 'pass_number' THEN v_json->>'pass_number' ELSE NULL END;
+    v_pass_issuer_code = CASE WHEN v_json ? 'pass_issuer_code' THEN v_json->>'pass_issuer_code' ELSE NULL END;
+    v_payment_method_id = CASE WHEN v_json ? 'payment_method_id' THEN v_json->>'payment_method_id' ELSE NULL END;
+    v_card_mask = CASE WHEN v_json ? 'card_mask' THEN v_json->>'card_mask' ELSE NULL END;
+    v_card_expiration_date = CASE WHEN v_json ? 'card_expiration_date' THEN v_json->>'card_expiration_date' ELSE NULL END;
+    v_gateway_name = CASE WHEN v_json ? 'gateway_name' THEN v_json->>'gateway_name' ELSE NULL END;
+    v_card_token = CASE WHEN v_json ? 'card_token' THEN v_json->>'card_token' ELSE NULL END;
+    v_sbp_bank_key = CASE WHEN v_json ? 'sbp_bank_key' THEN v_json->>'sbp_bank_key' ELSE NULL END;
+    v_pam_fio = CASE WHEN v_json ? 'pam_fio' THEN v_json->>'pam_fio' ELSE NULL END;
+    v_full_identification = CASE WHEN v_json ? 'full_identification' THEN v_json->>'full_identification' ELSE NULL END;
+    v_tmp_permissible_loan_key = CASE WHEN v_json ? 'agreed_loan_terms_id' THEN NULLIF(v_json->>'agreed_loan_terms_id', '')::BIGINT ELSE NULL END;
 
     -- Проверка обязательных полей
-    IF COALESCE(v_business_key, '') = '' OR COALESCE(v_transfer_sum, 0) = 0 THEN
+    IF v_business_key IS NULL OR v_transfer_sum IS NULL THEN
         result = -1;
         result_str = 'Ошибка парсинга входных данных';
         response = jsonb_build_object(
             'error', 'Обязательные поля (business-key, transfer_sum) не заполнены'
         )::VARCHAR;
-        GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+        
         PERFORM api.add_log(
             'ERROR', 
             'Ошибка проверки обязательных полей в parse_request_for_get_approved_for_transfer_2', 
@@ -471,13 +478,16 @@ BEGIN
                 '_method', _method,
                 '_request', _request
             ), 
-            v_context
+            NULL
         );
+        response = jsonb_build_object(
+            'error', 'Обязательные поля (business-key, transfer_sum) не заполнены'
+        )::VARCHAR;
         RETURN;
     END IF;
 
     -- Обработка номера телефона
-    IF length(v_phone_mobile) = 10 THEN
+    IF v_phone_mobile IS NOT NULL AND LENGTH(v_phone_mobile) = 10 THEN
         v_phone_mobile = '+7' || v_phone_mobile;
     END IF;
 
@@ -561,7 +571,7 @@ BEGIN
         response = jsonb_build_object(
             'error', 'Не найдена открытая заявка'
         )::VARCHAR;
-        GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+        
         PERFORM api.add_log(
             'ERROR', 
             'Не найдена открытая заявка в parse_request_for_get_approved_for_transfer_2', 
@@ -571,8 +581,11 @@ BEGIN
                 '_request', _request,
                 'business_key', v_business_key
             ), 
-            v_context
+            NULL
         );
+        response = jsonb_build_object(
+            'error', 'Не найдена открытая заявка'
+        )::VARCHAR;
         RETURN;
     END IF;
 
@@ -712,7 +725,7 @@ BEGIN
 
         v_query = 'SELECT * FROM eis_processes.get_approved_for_transfer('
             || v_application_key::VARCHAR || ', '
-            || '''' || v_full_identification || ''', '
+            || '''' || COALESCE(v_full_identification, '') || ''', '
             || '''' || v_business_key || ''')';
 
         SELECT * FROM dblink.dblink_connect(v_connect_name, v_connect_string)
@@ -828,12 +841,12 @@ BEGIN
         RETURN;
     END;
 
-    -- Извлечение данных из JSON
-    v_business_key = v_json->>'business-key';
-    v_tmp_permissible_loan_key = (v_json->>'agreed_loan_terms_id')::BIGINT;
+    -- Извлечение данных из JSON с учетом NULL для отсутствующих нод и сохранением пустых строк
+    v_business_key = CASE WHEN v_json ? 'business-key' THEN v_json->>'business-key' ELSE NULL END;
+    v_tmp_permissible_loan_key = CASE WHEN v_json ? 'agreed_loan_terms_id' THEN NULLIF(v_json->>'agreed_loan_terms_id', '')::BIGINT ELSE NULL END;
 
     -- Проверка обязательных полей
-    IF COALESCE(v_business_key, '') = '' OR COALESCE(v_tmp_permissible_loan_key, 0) = 0 THEN
+    IF v_business_key IS NULL OR v_tmp_permissible_loan_key IS NULL THEN
         result = -1;
         result_str = 'Ошибка: обязательные поля не заполнены';
         response = jsonb_build_object(
@@ -863,7 +876,7 @@ BEGIN
         response = jsonb_build_object(
             'error', 'Не найдена открытая заявка'
         )::VARCHAR;
-        GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+        
         PERFORM api.add_log(
             'ERROR', 
             'Не найдена открытая заявка в parse_request_for_loan_docs_leasing', 
@@ -893,7 +906,7 @@ BEGIN
 
     -- Установка параметров контракта
     SELECT g.*
-    FROM eis_processes.set_contract_parametrs_leasing(v_tmp_permissible_loan_key)
+    FROM eis_processes.set_contract_parametrs_leasing(v_tmp_permissible_loan_key) g
     INTO set_res;
 
     IF set_res < 0 THEN
@@ -996,6 +1009,7 @@ DECLARE
 <history_list>
     <item><date_m>17.09.2025</date_m><task_n>55444014</task_n><author>Крупская И.Е.</author></item>
     <item><date_m>26.09.2025</date_m><task_n></task_n><author>xtetis</author></item>
+    <item><date_m>26.09.2025</date_m><task_n>Unknown</task_n><author>Updated for NULL handling</author></item>
 </history_list>*/
     v_json JSONB; -- Переменная для хранения входного JSON
     v_loan_issue_fact JSONB; -- Вложенный объект для факта выдачи займа
@@ -1058,26 +1072,25 @@ BEGIN
         RETURN;
     END;
 
-    -- Извлечение данных из JSON
-    v_business_key = v_json->>'business-key';
-    v_tmp_permissible_loan_key = (v_json->>'agreed_loan_terms_id')::INTEGER;
-    v_transfer_money_dt = (v_json->>'transfer_money_dt')::TIMESTAMP;
+    -- Извлечение данных из JSON с учетом NULL для отсутствующих нод и сохранением пустых строк
+    v_business_key = CASE WHEN v_json ? 'business-key' THEN v_json->>'business-key' ELSE NULL END;
+    v_tmp_permissible_loan_key = CASE WHEN v_json ? 'agreed_loan_terms_id' THEN NULLIF(v_json->>'agreed_loan_terms_id', '')::INTEGER ELSE NULL END;
+    v_transfer_money_dt = CASE WHEN v_json ? 'transfer_money_dt' THEN NULLIF(v_json->>'transfer_money_dt', '')::TIMESTAMP ELSE NULL END;
+    v_payment_info = CASE WHEN v_json ? 'payment_info' THEN v_json->>'payment_info' ELSE NULL END;
 
     -- Извлечение вложенного объекта loan_issue_fact
-    v_loan_issue_fact = v_json->'loan_issue_fact';
-    v_phone_number = v_loan_issue_fact->>'phone_number';
-    v_phone_approval_send_dt = (v_loan_issue_fact->>'phone_approval_send_dt')::TIMESTAMP;
-    v_phone_approval_code = v_loan_issue_fact->>'phone_approval_code';
-    v_phone_approval_receive_code_dt = (v_loan_issue_fact->>'phone_approval_receive_code_dt')::TIMESTAMP;
-    v_phone_number_sign = v_loan_issue_fact->>'phone_number_sign';
-    v_sign_docs_send_dt = (v_loan_issue_fact->>'sign_docs_send_dt')::TIMESTAMP;
-    v_sign_docs_code = v_loan_issue_fact->>'sign_docs_code';
-    v_sign_docs_receive_code_dt = (v_loan_issue_fact->>'sign_docs_receive_code_dt')::TIMESTAMP;
-
-    v_payment_info = v_json->>'payment_info';
+    v_loan_issue_fact = CASE WHEN v_json ? 'loan_issue_fact' THEN v_json->'loan_issue_fact' ELSE NULL END;
+    v_phone_number = CASE WHEN v_loan_issue_fact ? 'phone_number' THEN v_loan_issue_fact->>'phone_number' ELSE NULL END;
+    v_phone_approval_send_dt = CASE WHEN v_loan_issue_fact ? 'phone_approval_send_dt' THEN NULLIF(v_loan_issue_fact->>'phone_approval_send_dt', '')::TIMESTAMP ELSE NULL END;
+    v_phone_approval_code = CASE WHEN v_loan_issue_fact ? 'phone_approval_code' THEN v_loan_issue_fact->>'phone_approval_code' ELSE NULL END;
+    v_phone_approval_receive_code_dt = CASE WHEN v_loan_issue_fact ? 'phone_approval_receive_code_dt' THEN NULLIF(v_loan_issue_fact->>'phone_approval_receive_code_dt', '')::TIMESTAMP ELSE NULL END;
+    v_phone_number_sign = CASE WHEN v_loan_issue_fact ? 'phone_number_sign' THEN v_loan_issue_fact->>'phone_number_sign' ELSE NULL END;
+    v_sign_docs_send_dt = CASE WHEN v_loan_issue_fact ? 'sign_docs_send_dt' THEN NULLIF(v_loan_issue_fact->>'sign_docs_send_dt', '')::TIMESTAMP ELSE NULL END;
+    v_sign_docs_code = CASE WHEN v_loan_issue_fact ? 'sign_docs_code' THEN v_loan_issue_fact->>'sign_docs_code' ELSE NULL END;
+    v_sign_docs_receive_code_dt = CASE WHEN v_loan_issue_fact ? 'sign_docs_receive_code_dt' THEN NULLIF(v_loan_issue_fact->>'sign_docs_receive_code_dt', '')::TIMESTAMP ELSE NULL END;
 
     -- Проверка обязательных полей
-    IF COALESCE(v_business_key, '') = '' OR COALESCE(v_tmp_permissible_loan_key, 0) = 0 THEN
+    IF v_business_key IS NULL OR v_tmp_permissible_loan_key IS NULL THEN
         result = -1;
         result_str = 'Ошибка: обязательные поля не заполнены';
         response = jsonb_build_object(
@@ -1282,6 +1295,7 @@ DECLARE
 <history_list>
     <item><date_m>02.09.2025</date_m><task_n>54706355</task_n><author>Крупская И.Е.</author></item>
     <item><date_m>26.09.2025</date_m><task_n></task_n><author>xtetis</author></item>
+    <item><date_m>26.09.2025</date_m><task_n>Unknown</task_n><author>Updated for NULL handling</author></item>
 </history_list>*/
     v_json JSONB; -- Переменная для хранения входного JSON
     v_agreemets_part2_md5 JSONB; -- Вложенный объект для согласий
@@ -1317,7 +1331,7 @@ DECLARE
     v_inn VARCHAR;
     v_inn_result VARCHAR;
     v_uprid_result VARCHAR;
-  	v_uprid_channel VARCHAR;
+    v_uprid_channel VARCHAR;
     v_gender VARCHAR;
     v_pass_serial VARCHAR;
     v_pass_number VARCHAR;
@@ -1405,98 +1419,98 @@ BEGIN
         RETURN;
     END;
 
-    -- Извлечение данных из JSON
-    v_business_key = v_json->>'business-key';
-    v_source_id = v_json->>'source_id';
-    v_wm_id = v_json->>'wm_id';
-    v_click_id = v_json->>'click_id';
-    v_offer_id = v_json->>'offer_id';
-    v_source_id_last = v_json->>'source_id_last';
-    v_wm_id_last = v_json->>'wm_id_last';
-    v_click_id_last = v_json->>'click_id_last';
-    v_offer_id_last = v_json->>'offer_id_last';
-    v_utm_medium = v_json->>'utm_medium';
-    v_utm_campaign = v_json->>'utm_campaign';
-    v_utm_term = v_json->>'utm_term';
-    v_utm_content = v_json->>'utm_content';
-    v_utm_medium_last = v_json->>'utm_medium_last';
-    v_utm_campaign_last = v_json->>'utm_campaign_last';
-    v_utm_term_last = v_json->>'utm_term_last';
-    v_utm_content_last = v_json->>'utm_content_last';
-    v_req_sum = (v_json->>'req_sum')::NUMERIC;
-    v_req_term = v_json->>'req_term';
-    v_lastname = v_json->>'lastname';
-    v_firstname = v_json->>'firstname';
-    v_patronimic = v_json->>'patronimic';
-    v_birthday = (v_json->>'birthday')::DATE;
-    v_phone_mobile = v_json->>'phone_mobile';
-    v_email = v_json->>'email';
-    v_snils = v_json->>'snils';
-    v_inn = v_json->>'inn';
-    v_inn_result = v_json->>'inn_result';
-    v_uprid_result = v_json->>'uprid_result';
-    v_uprid_channel = v_json->>'uprid_channel';
-    v_gender = v_json->>'gender';
-    v_pass_serial = v_json->>'pass_serial';
-    v_pass_number = v_json->>'pass_number';
-    v_pass_issuer = v_json->>'pass_issuer';
-    v_pass_issuer_code = v_json->>'pass_issuer_code';
-    v_pass_issue_date = (v_json->>'pass_issue_date')::DATE;
-    v_birthplace = v_json->>'birthplace';
-    v_reg_address_full = (v_json->'reg_address_full')::TEXT;
-    v_reg_region = v_json->>'reg_region';
-    v_reg_region_key = v_json->>'reg_region_key';
-    v_reg_city = v_json->>'reg_city';
-    v_reg_city_key = v_json->>'reg_city_key';
-    v_reg_settlement = v_json->>'reg_settlement';
-    v_reg_settlement_key = v_json->>'reg_settlement_key';
-    v_reg_street = v_json->>'reg_street';
-    v_reg_street_key = v_json->>'reg_street_key';
-    v_reg_house = v_json->>'reg_house';
-    v_reg_housing = v_json->>'reg_housing';
-    v_reg_building = v_json->>'reg_building';
-    v_reg_flat = v_json->>'reg_flat';
-    v_family_status = v_json->>'family_status';
-    v_emloyment_type = v_json->>'emloyment_type';
-    v_organization_type = v_json->>'organization_type';
-    v_company_occupation = v_json->>'company_occupation';
-    v_position_type = v_json->>'position_type';
-    v_last_work_term = v_json->>'last_work_term';
-    v_monthly_income = (v_json->>'monthly_income')::NUMERIC;
-    v_loan_purpose = v_json->>'loan_purpose';
-    v_litigation = (v_json->>'litigation')::BOOLEAN;
+    -- Извлечение данных из JSON с учетом NULL для отсутствующих нод и сохранением пустых строк
+    v_business_key = CASE WHEN v_json ? 'business-key' THEN v_json->>'business-key' ELSE NULL END;
+    v_source_id = CASE WHEN v_json ? 'source_id' THEN v_json->>'source_id' ELSE NULL END;
+    v_wm_id = CASE WHEN v_json ? 'wm_id' THEN v_json->>'wm_id' ELSE NULL END;
+    v_click_id = CASE WHEN v_json ? 'click_id' THEN v_json->>'click_id' ELSE NULL END;
+    v_offer_id = CASE WHEN v_json ? 'offer_id' THEN v_json->>'offer_id' ELSE NULL END;
+    v_source_id_last = CASE WHEN v_json ? 'source_id_last' THEN v_json->>'source_id_last' ELSE NULL END;
+    v_wm_id_last = CASE WHEN v_json ? 'wm_id_last' THEN v_json->>'wm_id_last' ELSE NULL END;
+    v_click_id_last = CASE WHEN v_json ? 'click_id_last' THEN v_json->>'click_id_last' ELSE NULL END;
+    v_offer_id_last = CASE WHEN v_json ? 'offer_id_last' THEN v_json->>'offer_id_last' ELSE NULL END;
+    v_utm_medium = CASE WHEN v_json ? 'utm_medium' THEN v_json->>'utm_medium' ELSE NULL END;
+    v_utm_campaign = CASE WHEN v_json ? 'utm_campaign' THEN v_json->>'utm_campaign' ELSE NULL END;
+    v_utm_term = CASE WHEN v_json ? 'utm_term' THEN v_json->>'utm_term' ELSE NULL END;
+    v_utm_content = CASE WHEN v_json ? 'utm_content' THEN v_json->>'utm_content' ELSE NULL END;
+    v_utm_medium_last = CASE WHEN v_json ? 'utm_medium_last' THEN v_json->>'utm_medium_last' ELSE NULL END;
+    v_utm_campaign_last = CASE WHEN v_json ? 'utm_campaign_last' THEN v_json->>'utm_campaign_last' ELSE NULL END;
+    v_utm_term_last = CASE WHEN v_json ? 'utm_term_last' THEN v_json->>'utm_term_last' ELSE NULL END;
+    v_utm_content_last = CASE WHEN v_json ? 'utm_content_last' THEN v_json->>'utm_content_last' ELSE NULL END;
+    v_req_sum = CASE WHEN v_json ? 'req_sum' THEN NULLIF(v_json->>'req_sum', '')::NUMERIC ELSE NULL END;
+    v_req_term = CASE WHEN v_json ? 'req_term' THEN v_json->>'req_term' ELSE NULL END;
+    v_lastname = CASE WHEN v_json ? 'lastname' THEN v_json->>'lastname' ELSE NULL END;
+    v_firstname = CASE WHEN v_json ? 'firstname' THEN v_json->>'firstname' ELSE NULL END;
+    v_patronimic = CASE WHEN v_json ? 'patronimic' THEN v_json->>'patronimic' ELSE NULL END;
+    v_birthday = CASE WHEN v_json ? 'birthday' THEN NULLIF(v_json->>'birthday', '')::DATE ELSE NULL END;
+    v_phone_mobile = CASE WHEN v_json ? 'phone_mobile' THEN v_json->>'phone_mobile' ELSE NULL END;
+    v_email = CASE WHEN v_json ? 'email' THEN v_json->>'email' ELSE NULL END;
+    v_snils = CASE WHEN v_json ? 'snils' THEN v_json->>'snils' ELSE NULL END;
+    v_inn = CASE WHEN v_json ? 'inn' THEN v_json->>'inn' ELSE NULL END;
+    v_inn_result = CASE WHEN v_json ? 'inn_result' THEN v_json->>'inn_result' ELSE NULL END;
+    v_uprid_result = CASE WHEN v_json ? 'uprid_result' THEN v_json->>'uprid_result' ELSE NULL END;
+    v_uprid_channel = CASE WHEN v_json ? 'uprid_channel' THEN v_json->>'uprid_channel' ELSE NULL END;
+    v_gender = CASE WHEN v_json ? 'gender' THEN v_json->>'gender' ELSE NULL END;
+    v_pass_serial = CASE WHEN v_json ? 'pass_serial' THEN v_json->>'pass_serial' ELSE NULL END;
+    v_pass_number = CASE WHEN v_json ? 'pass_number' THEN v_json->>'pass_number' ELSE NULL END;
+    v_pass_issuer = CASE WHEN v_json ? 'pass_issuer' THEN v_json->>'pass_issuer' ELSE NULL END;
+    v_pass_issuer_code = CASE WHEN v_json ? 'pass_issuer_code' THEN v_json->>'pass_issuer_code' ELSE NULL END;
+    v_pass_issue_date = CASE WHEN v_json ? 'pass_issue_date' THEN NULLIF(v_json->>'pass_issue_date', '')::DATE ELSE NULL END;
+    v_birthplace = CASE WHEN v_json ? 'birthplace' THEN v_json->>'birthplace' ELSE NULL END;
+    v_reg_address_full = CASE WHEN v_json ? 'reg_address_full' THEN v_json->>'reg_address_full' ELSE NULL END;
+    v_reg_region = CASE WHEN v_json ? 'reg_region' THEN v_json->>'reg_region' ELSE NULL END;
+    v_reg_region_key = CASE WHEN v_json ? 'reg_region_key' THEN v_json->>'reg_region_key' ELSE NULL END;
+    v_reg_city = CASE WHEN v_json ? 'reg_city' THEN v_json->>'reg_city' ELSE NULL END;
+    v_reg_city_key = CASE WHEN v_json ? 'reg_city_key' THEN v_json->>'reg_city_key' ELSE NULL END;
+    v_reg_settlement = CASE WHEN v_json ? 'reg_settlement' THEN v_json->>'reg_settlement' ELSE NULL END;
+    v_reg_settlement_key = CASE WHEN v_json ? 'reg_settlement_key' THEN v_json->>'reg_settlement_key' ELSE NULL END;
+    v_reg_street = CASE WHEN v_json ? 'reg_street' THEN v_json->>'reg_street' ELSE NULL END;
+    v_reg_street_key = CASE WHEN v_json ? 'reg_street_key' THEN v_json->>'reg_street_key' ELSE NULL END;
+    v_reg_house = CASE WHEN v_json ? 'reg_house' THEN v_json->>'reg_house' ELSE NULL END;
+    v_reg_housing = CASE WHEN v_json ? 'reg_housing' THEN v_json->>'reg_housing' ELSE NULL END;
+    v_reg_building = CASE WHEN v_json ? 'reg_building' THEN v_json->>'reg_building' ELSE NULL END;
+    v_reg_flat = CASE WHEN v_json ? 'reg_flat' THEN v_json->>'reg_flat' ELSE NULL END;
+    v_family_status = CASE WHEN v_json ? 'family_status' THEN v_json->>'family_status' ELSE NULL END;
+    v_emloyment_type = CASE WHEN v_json ? 'emloyment_type' THEN v_json->>'emloyment_type' ELSE NULL END;
+    v_organization_type = CASE WHEN v_json ? 'organization_type' THEN v_json->>'organization_type' ELSE NULL END;
+    v_company_occupation = CASE WHEN v_json ? 'company_occupation' THEN v_json->>'company_occupation' ELSE NULL END;
+    v_position_type = CASE WHEN v_json ? 'position_type' THEN v_json->>'position_type' ELSE NULL END;
+    v_last_work_term = CASE WHEN v_json ? 'last_work_term' THEN v_json->>'last_work_term' ELSE NULL END;
+    v_monthly_income = CASE WHEN v_json ? 'monthly_income' THEN NULLIF(v_json->>'monthly_income', '')::NUMERIC ELSE NULL END;
+    v_loan_purpose = CASE WHEN v_json ? 'loan_purpose' THEN v_json->>'loan_purpose' ELSE NULL END;
+    v_litigation = CASE WHEN v_json ? 'litigation' THEN NULLIF(v_json->>'litigation', '')::BOOLEAN ELSE NULL END;
     v_litigation = COALESCE(v_litigation, FALSE);
-    v_bankruptcy = (v_json->>'bankruptcy')::BOOLEAN;
+    v_bankruptcy = CASE WHEN v_json ? 'bankruptcy' THEN NULLIF(v_json->>'bankruptcy', '')::BOOLEAN ELSE NULL END;
     v_bankruptcy = COALESCE(v_bankruptcy, FALSE);
-    v_card_mask = v_json->>'card_mask';
-    v_card_expiration_date = v_json->>'card_expiration_date';
-    v_gateway_name = v_json->>'gateway_name';
-    v_card_token = v_json->>'card_token';
-    v_esia_flag = (v_json->>'esia_flag')::INTEGER;
-    v_device_type = v_json->>'device_type';
-    v_client_ip = v_json->>'client_ip';
-    v_device_system = v_json->>'device_system';
-    v_browser = v_json->>'browser';
-    v_browser_version = v_json->>'browser_version';
-    v_cession_of_claims_agreed = (v_json->>'cession_of_claims_agreed')::BOOLEAN;
+    v_card_mask = CASE WHEN v_json ? 'card_mask' THEN v_json->>'card_mask' ELSE NULL END;
+    v_card_expiration_date = CASE WHEN v_json ? 'card_expiration_date' THEN v_json->>'card_expiration_date' ELSE NULL END;
+    v_gateway_name = CASE WHEN v_json ? 'gateway_name' THEN v_json->>'gateway_name' ELSE NULL END;
+    v_card_token = CASE WHEN v_json ? 'card_token' THEN v_json->>'card_token' ELSE NULL END;
+    v_esia_flag = CASE WHEN v_json ? 'esia_flag' THEN NULLIF(v_json->>'esia_flag', '')::INTEGER ELSE NULL END;
+    v_device_type = CASE WHEN v_json ? 'device_type' THEN v_json->>'device_type' ELSE NULL END;
+    v_client_ip = CASE WHEN v_json ? 'client_ip' THEN v_json->>'client_ip' ELSE NULL END;
+    v_device_system = CASE WHEN v_json ? 'device_system' THEN v_json->>'device_system' ELSE NULL END;
+    v_browser = CASE WHEN v_json ? 'browser' THEN v_json->>'browser' ELSE NULL END;
+    v_browser_version = CASE WHEN v_json ? 'browser_version' THEN v_json->>'browser_version' ELSE NULL END;
+    v_cession_of_claims_agreed = CASE WHEN v_json ? 'cession_of_claims_agreed' THEN NULLIF(v_json->>'cession_of_claims_agreed', '')::BOOLEAN ELSE NULL END;
     v_cession_of_claims_agreed = COALESCE(v_cession_of_claims_agreed, FALSE);
-    v_additional_income = (v_json->>'additional_income')::NUMERIC;
-    v_full_identification_result = v_json->>'full_identification_result';
-    v_vcid = v_json->>'vcid';
-    v_clicked_from = v_json->>'clicked_from';
-    v_juicy_session_id = v_json->>'juicy_session_id';
+    v_additional_income = CASE WHEN v_json ? 'additional_income' THEN NULLIF(v_json->>'additional_income', '')::NUMERIC ELSE NULL END;
+    v_full_identification_result = CASE WHEN v_json ? 'full_identification_result' THEN v_json->>'full_identification_result' ELSE NULL END;
+    v_vcid = CASE WHEN v_json ? 'vcid' THEN v_json->>'vcid' ELSE NULL END;
+    v_clicked_from = CASE WHEN v_json ? 'clicked_from' THEN v_json->>'clicked_from' ELSE NULL END;
+    v_juicy_session_id = CASE WHEN v_json ? 'juicy_session_id' THEN v_json->>'juicy_session_id' ELSE NULL END;
 
     -- Извлечение вложенного объекта agreemets_part2_md5
     v_agreemets_part2_md5 = v_json->'agreemets_part2_md5';
-    v_nbki_md5 = v_agreemets_part2_md5->>'nbki_md5';
-    v_equifax_md5 = v_agreemets_part2_md5->>'equifax_md5';
-    v_rus_standart_md5 = v_agreemets_part2_md5->>'rus_standart_md5';
-    v_service_agreement_md5 = v_agreemets_part2_md5->>'service_agreement_md5';
+    v_nbki_md5 = CASE WHEN v_agreemets_part2_md5 ? 'nbki_md5' THEN v_agreemets_part2_md5->>'nbki_md5' ELSE NULL END;
+    v_equifax_md5 = CASE WHEN v_agreemets_part2_md5 ? 'equifax_md5' THEN v_agreemets_part2_md5->>'equifax_md5' ELSE NULL END;
+    v_rus_standart_md5 = CASE WHEN v_agreemets_part2_md5 ? 'rus_standart_md5' THEN v_agreemets_part2_md5->>'rus_standart_md5' ELSE NULL END;
+    v_service_agreement_md5 = CASE WHEN v_agreemets_part2_md5 ? 'service_agreement_md5' THEN v_agreemets_part2_md5->>'service_agreement_md5' ELSE NULL END;
 
     -- Проверка обязательных полей
-    IF COALESCE(v_lastname, '') = '' OR COALESCE(v_req_sum, 0) = 0
-    	OR COALESCE(v_firstname, '') = '' OR COALESCE(v_pass_serial, '') = ''
-        OR COALESCE(v_pass_number, '') = '' THEN
+    IF v_lastname IS NULL OR v_req_sum IS NULL
+        OR v_firstname IS NULL OR v_pass_serial IS NULL
+        OR v_pass_number IS NULL THEN
         result = -1;
         result_str = 'Ошибка: обязательные поля не заполнены';
         response = jsonb_build_object(
@@ -1507,7 +1521,7 @@ BEGIN
 
     -- Заглушка для тестовых паспортов
     IF db_type() <> 'WORK' AND LEFT(v_pass_serial, 2) = '98' THEN
-    	result = -1;
+        result = -1;
         result_str = 'Заглушка';
         response = jsonb_build_object(
             'error', 'Заглушка для тестовых паспортов'
@@ -1516,19 +1530,19 @@ BEGIN
     END IF;
 
     -- Обработка кода подразделения паспорта
-    IF v_pass_issuer_code !~* '^\d+$' THEN
-    	v_pass_issuer_code = REPLACE(v_pass_issuer_code, ' ', '');
-    	v_pass_issuer_code = REPLACE(v_pass_issuer_code, '-', '');
-    	v_pass_issuer_code = REPLACE(v_pass_issuer_code, '_', '');
+    IF v_pass_issuer_code IS NOT NULL AND v_pass_issuer_code !~* '^\d+$' THEN
+        v_pass_issuer_code = REPLACE(v_pass_issuer_code, ' ', '');
+        v_pass_issuer_code = REPLACE(v_pass_issuer_code, '-', '');
+        v_pass_issuer_code = REPLACE(v_pass_issuer_code, '_', '');
 
-    	IF CHAR_LENGTH(v_pass_issuer_code) = 6 THEN
-        	v_pass_issuer_code = LEFT(v_pass_issuer_code, 3) || '-' || RIGHT(v_pass_issuer_code, 3);
+        IF CHAR_LENGTH(v_pass_issuer_code) = 6 THEN
+            v_pass_issuer_code = LEFT(v_pass_issuer_code, 3) || '-' || RIGHT(v_pass_issuer_code, 3);
         END IF;
-   	END IF;
+    END IF;
 
     -- Обработка номера телефона
-    IF LENGTH(v_phone_mobile) = 10 THEN
-    	v_phone_mobile = '+7' || v_phone_mobile;
+    IF v_phone_mobile IS NOT NULL AND LENGTH(v_phone_mobile) = 10 THEN
+        v_phone_mobile = '+7' || v_phone_mobile;
     END IF;
 
     -- Разбор адреса, если регион указан
@@ -1570,12 +1584,12 @@ BEGIN
 
     -- Добавление улицы в справочник KLADR, если нужно
     IF v_reg_street_key IS NOT NULL AND v_reg_street_key_kladr IS NULL AND (
-    	v_reg_settlement_key_kladr IS NOT NULL OR v_reg_city_key_kladr IS NOT NULL OR v_reg_region_key_kladr IS NOT NULL
+        v_reg_settlement_key_kladr IS NOT NULL OR v_reg_city_key_kladr IS NOT NULL OR v_reg_region_key_kladr IS NOT NULL
     ) THEN
-    	-- Пытаемся добавить в справочник
+        -- Пытаемся добавить в справочник
         SELECT f.kladr_key
         FROM kladr.add_or_find_kladr_street(v_reg_street, '', v_reg_street_key::VARCHAR,
-        	COALESCE(v_reg_settlement_key_kladr, v_reg_city_key_kladr, v_reg_region_key_kladr)::VARCHAR) AS f
+            COALESCE(v_reg_settlement_key_kladr, v_reg_city_key_kladr, v_reg_region_key_kladr)::VARCHAR) AS f
         INTO v_reg_street_key_kladr;
     END IF;
 
@@ -1686,9 +1700,9 @@ BEGIN
       v_utm_content_last,
       v_req_sum,
       v_req_term,
-      UPPER(BTRIM(v_lastname, ' ')),
-      UPPER(BTRIM(v_firstname, ' ')),
-      UPPER(BTRIM(v_patronimic, ' ')),
+      UPPER(BTRIM(COALESCE(v_lastname, ''))),
+      UPPER(BTRIM(COALESCE(v_firstname, ''))),
+      UPPER(BTRIM(COALESCE(v_patronimic, ''))),
       v_birthday,
       v_phone_mobile,
       v_email,
@@ -1700,10 +1714,10 @@ BEGIN
       v_gender,
       v_pass_serial,
       v_pass_number,
-      UPPER(v_pass_issuer),
+      UPPER(COALESCE(v_pass_issuer, '')),
       v_pass_issuer_code,
       v_pass_issue_date,
-      UPPER(v_birthplace),
+      UPPER(COALESCE(v_birthplace, '')),
       v_reg_region,
       v_reg_region_key,
       v_reg_region_key_kladr,
@@ -1742,7 +1756,7 @@ BEGIN
       v_browser_version,
       v_cession_of_claims_agreed,
       v_additional_income,
-      UPPER(v_full_identification_result),
+      UPPER(COALESCE(v_full_identification_result, '')),
       v_reg_address_full,
       v_nbki_md5,
       v_equifax_md5,
@@ -1767,7 +1781,7 @@ BEGIN
         response = jsonb_build_object(
             'error', v_result_str
         )::VARCHAR;
-        GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+        
         PERFORM api.add_log(
             'ERROR', 
             'Ошибка конвертации в parse_request_for_loanapp_review_5: ' || v_result_str, 
@@ -1806,9 +1820,9 @@ BEGIN
       v_application_key, 
       'Bankiru', 
       v_application_key, 
-      UPPER(v_inn_result), 
+      UPPER(COALESCE(v_inn_result, '')),
       v_inn, 
-      UPPER(v_uprid_result)
+      UPPER(COALESCE(v_uprid_result, ''))
     );
 
     result = 1;
@@ -1976,98 +1990,98 @@ BEGIN
         RETURN;
     END;
 
-    -- Извлечение данных из JSON
-    v_business_key = v_json->>'business-key';
-    v_source_id = v_json->>'source_id';
-    v_wm_id = v_json->>'wm_id';
-    v_click_id = v_json->>'click_id';
-    v_offer_id = v_json->>'offer_id';
-    v_source_id_last = v_json->>'source_id_last';
-    v_wm_id_last = v_json->>'wm_id_last';
-    v_click_id_last = v_json->>'click_id_last';
-    v_offer_id_last = v_json->>'offer_id_last';
-    v_utm_medium = v_json->>'utm_medium';
-    v_utm_campaign = v_json->>'utm_campaign';
-    v_utm_term = v_json->>'utm_term';
-    v_utm_content = v_json->>'utm_content';
-    v_utm_medium_last = v_json->>'utm_medium_last';
-    v_utm_campaign_last = v_json->>'utm_campaign_last';
-    v_utm_term_last = v_json->>'utm_term_last';
-    v_utm_content_last = v_json->>'utm_content_last';
-    v_req_sum = (v_json->>'req_sum')::NUMERIC;
-    v_req_term = v_json->>'req_term';
-    v_lastname = v_json->>'lastname';
-    v_firstname = v_json->>'firstname';
-    v_patronimic = v_json->>'patronimic';
-    v_birthday = (v_json->>'birthday')::DATE;
-    v_phone_mobile = v_json->>'phone_mobile';
-    v_email = v_json->>'email';
-    v_snils = v_json->>'snils';
-    v_inn = v_json->>'inn';
-    v_inn_result = v_json->>'inn_result';
-    v_uprid_result = v_json->>'uprid_result';
-    v_uprid_channel = v_json->>'uprid_channel';
-    v_gender = v_json->>'gender';
-    v_pass_serial = v_json->>'pass_serial';
-    v_pass_number = v_json->>'pass_number';
-    v_pass_issuer = v_json->>'pass_issuer';
-    v_pass_issuer_code = v_json->>'pass_issuer_code';
-    v_pass_issue_date = (v_json->>'pass_issue_date')::DATE;
-    v_birthplace = v_json->>'birthplace';
-    v_reg_address_full = (v_json->'reg_address_full')::TEXT;
-    v_reg_region = v_json->>'reg_region';
-    v_reg_region_key = v_json->>'reg_region_key';
-    v_reg_city = v_json->>'reg_city';
-    v_reg_city_key = v_json->>'reg_city_key';
-    v_reg_settlement = v_json->>'reg_settlement';
-    v_reg_settlement_key = v_json->>'reg_settlement_key';
-    v_reg_street = v_json->>'reg_street';
-    v_reg_street_key = v_json->>'reg_street_key';
-    v_reg_house = v_json->>'reg_house';
-    v_reg_housing = v_json->>'reg_housing';
-    v_reg_building = v_json->>'reg_building';
-    v_reg_flat = v_json->>'reg_flat';
-    v_family_status = v_json->>'family_status';
-    v_emloyment_type = v_json->>'emloyment_type';
-    v_organization_type = v_json->>'organization_type';
-    v_company_occupation = v_json->>'company_occupation';
-    v_position_type = v_json->>'position_type';
-    v_last_work_term = v_json->>'last_work_term';
-    v_monthly_income = (v_json->>'monthly_income')::NUMERIC;
-    v_loan_purpose = v_json->>'loan_purpose';
-    v_litigation = (v_json->>'litigation')::BOOLEAN;
+    -- Извлечение данных из JSON с учетом NULL для отсутствующих нод и сохранением пустых строк
+    v_business_key = CASE WHEN v_json ? 'business-key' THEN v_json->>'business-key' ELSE NULL END;
+    v_source_id = CASE WHEN v_json ? 'source_id' THEN v_json->>'source_id' ELSE NULL END;
+    v_wm_id = CASE WHEN v_json ? 'wm_id' THEN v_json->>'wm_id' ELSE NULL END;
+    v_click_id = CASE WHEN v_json ? 'click_id' THEN v_json->>'click_id' ELSE NULL END;
+    v_offer_id = CASE WHEN v_json ? 'offer_id' THEN v_json->>'offer_id' ELSE NULL END;
+    v_source_id_last = CASE WHEN v_json ? 'source_id_last' THEN v_json->>'source_id_last' ELSE NULL END;
+    v_wm_id_last = CASE WHEN v_json ? 'wm_id_last' THEN v_json->>'wm_id_last' ELSE NULL END;
+    v_click_id_last = CASE WHEN v_json ? 'click_id_last' THEN v_json->>'click_id_last' ELSE NULL END;
+    v_offer_id_last = CASE WHEN v_json ? 'offer_id_last' THEN v_json->>'offer_id_last' ELSE NULL END;
+    v_utm_medium = CASE WHEN v_json ? 'utm_medium' THEN v_json->>'utm_medium' ELSE NULL END;
+    v_utm_campaign = CASE WHEN v_json ? 'utm_campaign' THEN v_json->>'utm_campaign' ELSE NULL END;
+    v_utm_term = CASE WHEN v_json ? 'utm_term' THEN v_json->>'utm_term' ELSE NULL END;
+    v_utm_content = CASE WHEN v_json ? 'utm_content' THEN v_json->>'utm_content' ELSE NULL END;
+    v_utm_medium_last = CASE WHEN v_json ? 'utm_medium_last' THEN v_json->>'utm_medium_last' ELSE NULL END;
+    v_utm_campaign_last = CASE WHEN v_json ? 'utm_campaign_last' THEN v_json->>'utm_campaign_last' ELSE NULL END;
+    v_utm_term_last = CASE WHEN v_json ? 'utm_term_last' THEN v_json->>'utm_term_last' ELSE NULL END;
+    v_utm_content_last = CASE WHEN v_json ? 'utm_content_last' THEN v_json->>'utm_content_last' ELSE NULL END;
+    v_req_sum = CASE WHEN v_json ? 'req_sum' THEN NULLIF(v_json->>'req_sum', '')::NUMERIC ELSE NULL END;
+    v_req_term = CASE WHEN v_json ? 'req_term' THEN v_json->>'req_term' ELSE NULL END;
+    v_lastname = CASE WHEN v_json ? 'lastname' THEN v_json->>'lastname' ELSE NULL END;
+    v_firstname = CASE WHEN v_json ? 'firstname' THEN v_json->>'firstname' ELSE NULL END;
+    v_patronimic = CASE WHEN v_json ? 'patronimic' THEN v_json->>'patronimic' ELSE NULL END;
+    v_birthday = CASE WHEN v_json ? 'birthday' THEN NULLIF(v_json->>'birthday', '')::DATE ELSE NULL END;
+    v_phone_mobile = CASE WHEN v_json ? 'phone_mobile' THEN v_json->>'phone_mobile' ELSE NULL END;
+    v_email = CASE WHEN v_json ? 'email' THEN v_json->>'email' ELSE NULL END;
+    v_snils = CASE WHEN v_json ? 'snils' THEN v_json->>'snils' ELSE NULL END;
+    v_inn = CASE WHEN v_json ? 'inn' THEN v_json->>'inn' ELSE NULL END;
+    v_inn_result = CASE WHEN v_json ? 'inn_result' THEN v_json->>'inn_result' ELSE NULL END;
+    v_uprid_result = CASE WHEN v_json ? 'uprid_result' THEN v_json->>'uprid_result' ELSE NULL END;
+    v_uprid_channel = CASE WHEN v_json ? 'uprid_channel' THEN v_json->>'uprid_channel' ELSE NULL END;
+    v_gender = CASE WHEN v_json ? 'gender' THEN v_json->>'gender' ELSE NULL END;
+    v_pass_serial = CASE WHEN v_json ? 'pass_serial' THEN v_json->>'pass_serial' ELSE NULL END;
+    v_pass_number = CASE WHEN v_json ? 'pass_number' THEN v_json->>'pass_number' ELSE NULL END;
+    v_pass_issuer = CASE WHEN v_json ? 'pass_issuer' THEN v_json->>'pass_issuer' ELSE NULL END;
+    v_pass_issuer_code = CASE WHEN v_json ? 'pass_issuer_code' THEN v_json->>'pass_issuer_code' ELSE NULL END;
+    v_pass_issue_date = CASE WHEN v_json ? 'pass_issue_date' THEN NULLIF(v_json->>'pass_issue_date', '')::DATE ELSE NULL END;
+    v_birthplace = CASE WHEN v_json ? 'birthplace' THEN v_json->>'birthplace' ELSE NULL END;
+    v_reg_address_full = CASE WHEN v_json ? 'reg_address_full' THEN v_json->>'reg_address_full' ELSE NULL END;
+    v_reg_region = CASE WHEN v_json ? 'reg_region' THEN v_json->>'reg_region' ELSE NULL END;
+    v_reg_region_key = CASE WHEN v_json ? 'reg_region_key' THEN v_json->>'reg_region_key' ELSE NULL END;
+    v_reg_city = CASE WHEN v_json ? 'reg_city' THEN v_json->>'reg_city' ELSE NULL END;
+    v_reg_city_key = CASE WHEN v_json ? 'reg_city_key' THEN v_json->>'reg_city_key' ELSE NULL END;
+    v_reg_settlement = CASE WHEN v_json ? 'reg_settlement' THEN v_json->>'reg_settlement' ELSE NULL END;
+    v_reg_settlement_key = CASE WHEN v_json ? 'reg_settlement_key' THEN v_json->>'reg_settlement_key' ELSE NULL END;
+    v_reg_street = CASE WHEN v_json ? 'reg_street' THEN v_json->>'reg_street' ELSE NULL END;
+    v_reg_street_key = CASE WHEN v_json ? 'reg_street_key' THEN v_json->>'reg_street_key' ELSE NULL END;
+    v_reg_house = CASE WHEN v_json ? 'reg_house' THEN v_json->>'reg_house' ELSE NULL END;
+    v_reg_housing = CASE WHEN v_json ? 'reg_housing' THEN v_json->>'reg_housing' ELSE NULL END;
+    v_reg_building = CASE WHEN v_json ? 'reg_building' THEN v_json->>'reg_building' ELSE NULL END;
+    v_reg_flat = CASE WHEN v_json ? 'reg_flat' THEN v_json->>'reg_flat' ELSE NULL END;
+    v_family_status = CASE WHEN v_json ? 'family_status' THEN v_json->>'family_status' ELSE NULL END;
+    v_emloyment_type = CASE WHEN v_json ? 'emloyment_type' THEN v_json->>'emloyment_type' ELSE NULL END;
+    v_organization_type = CASE WHEN v_json ? 'organization_type' THEN v_json->>'organization_type' ELSE NULL END;
+    v_company_occupation = CASE WHEN v_json ? 'company_occupation' THEN v_json->>'company_occupation' ELSE NULL END;
+    v_position_type = CASE WHEN v_json ? 'position_type' THEN v_json->>'position_type' ELSE NULL END;
+    v_last_work_term = CASE WHEN v_json ? 'last_work_term' THEN v_json->>'last_work_term' ELSE NULL END;
+    v_monthly_income = CASE WHEN v_json ? 'monthly_income' THEN NULLIF(v_json->>'monthly_income', '')::NUMERIC ELSE NULL END;
+    v_loan_purpose = CASE WHEN v_json ? 'loan_purpose' THEN v_json->>'loan_purpose' ELSE NULL END;
+    v_litigation = CASE WHEN v_json ? 'litigation' THEN NULLIF(v_json->>'litigation', '')::BOOLEAN ELSE NULL END;
     v_litigation = COALESCE(v_litigation, FALSE);
-    v_bankruptcy = (v_json->>'bankruptcy')::BOOLEAN;
+    v_bankruptcy = CASE WHEN v_json ? 'bankruptcy' THEN NULLIF(v_json->>'bankruptcy', '')::BOOLEAN ELSE NULL END;
     v_bankruptcy = COALESCE(v_bankruptcy, FALSE);
-    v_card_mask = v_json->>'card_mask';
-    v_card_expiration_date = v_json->>'card_expiration_date';
-    v_gateway_name = v_json->>'gateway_name';
-    v_card_token = v_json->>'card_token';
-    v_esia_flag = (v_json->>'esia_flag')::INTEGER;
-    v_device_type = v_json->>'device_type';
-    v_client_ip = v_json->>'client_ip';
-    v_device_system = v_json->>'device_system';
-    v_browser = v_json->>'browser';
-    v_browser_version = v_json->>'browser_version';
-    v_cession_of_claims_agreed = (v_json->>'cession_of_claims_agreed')::BOOLEAN;
+    v_card_mask = CASE WHEN v_json ? 'card_mask' THEN v_json->>'card_mask' ELSE NULL END;
+    v_card_expiration_date = CASE WHEN v_json ? 'card_expiration_date' THEN v_json->>'card_expiration_date' ELSE NULL END;
+    v_gateway_name = CASE WHEN v_json ? 'gateway_name' THEN v_json->>'gateway_name' ELSE NULL END;
+    v_card_token = CASE WHEN v_json ? 'card_token' THEN v_json->>'card_token' ELSE NULL END;
+    v_esia_flag = CASE WHEN v_json ? 'esia_flag' THEN NULLIF(v_json->>'esia_flag', '')::INTEGER ELSE NULL END;
+    v_device_type = CASE WHEN v_json ? 'device_type' THEN v_json->>'device_type' ELSE NULL END;
+    v_client_ip = CASE WHEN v_json ? 'client_ip' THEN v_json->>'client_ip' ELSE NULL END;
+    v_device_system = CASE WHEN v_json ? 'device_system' THEN v_json->>'device_system' ELSE NULL END;
+    v_browser = CASE WHEN v_json ? 'browser' THEN v_json->>'browser' ELSE NULL END;
+    v_browser_version = CASE WHEN v_json ? 'browser_version' THEN v_json->>'browser_version' ELSE NULL END;
+    v_cession_of_claims_agreed = CASE WHEN v_json ? 'cession_of_claims_agreed' THEN NULLIF(v_json->>'cession_of_claims_agreed', '')::BOOLEAN ELSE NULL END;
     v_cession_of_claims_agreed = COALESCE(v_cession_of_claims_agreed, FALSE);
-    v_additional_income = (v_json->>'additional_income')::NUMERIC;
-    v_full_identification_result = v_json->>'full_identification_result';
-    v_vcid = v_json->>'vcid';
-    v_clicked_from = v_json->>'clicked_from';
-    v_juicy_session_id = v_json->>'juicy_session_id';
+    v_additional_income = CASE WHEN v_json ? 'additional_income' THEN NULLIF(v_json->>'additional_income', '')::NUMERIC ELSE NULL END;
+    v_full_identification_result = CASE WHEN v_json ? 'full_identification_result' THEN v_json->>'full_identification_result' ELSE NULL END;
+    v_vcid = CASE WHEN v_json ? 'vcid' THEN v_json->>'vcid' ELSE NULL END;
+    v_clicked_from = CASE WHEN v_json ? 'clicked_from' THEN v_json->>'clicked_from' ELSE NULL END;
+    v_juicy_session_id = CASE WHEN v_json ? 'juicy_session_id' THEN v_json->>'juicy_session_id' ELSE NULL END;
 
     -- Извлечение вложенного объекта agreemets_part2_md5
-    v_agreemets_part2_md5 = v_json->'agreemets_part2_md5';
-    v_nbki_md5 = v_agreemets_part2_md5->>'nbki_md5';
-    v_equifax_md5 = v_agreemets_part2_md5->>'equifax_md5';
-    v_rus_standart_md5 = v_agreemets_part2_md5->>'rus_standart_md5';
-    v_service_agreement_md5 = v_agreemets_part2_md5->>'service_agreement_md5';
+    v_agreemets_part2_md5 = CASE WHEN v_json ? 'agreemets_part2_md5' THEN v_json->'agreemets_part2_md5' ELSE NULL END;
+    v_nbki_md5 = CASE WHEN v_agreemets_part2_md5 ? 'nbki_md5' THEN v_agreemets_part2_md5->>'nbki_md5' ELSE NULL END;
+    v_equifax_md5 = CASE WHEN v_agreemets_part2_md5 ? 'equifax_md5' THEN v_agreemets_part2_md5->>'equifax_md5' ELSE NULL END;
+    v_rus_standart_md5 = CASE WHEN v_agreemets_part2_md5 ? 'rus_standart_md5' THEN v_agreemets_part2_md5->>'rus_standart_md5' ELSE NULL END;
+    v_service_agreement_md5 = CASE WHEN v_agreemets_part2_md5 ? 'service_agreement_md5' THEN v_agreemets_part2_md5->>'service_agreement_md5' ELSE NULL END;
 
     -- Проверка обязательных полей
-    IF COALESCE(v_lastname, '') = '' OR COALESCE(v_req_sum, 0) = 0
-    	OR COALESCE(v_firstname, '') = '' OR COALESCE(v_pass_serial, '') = ''
-        OR COALESCE(v_pass_number, '') = '' THEN
+    IF v_lastname IS NULL OR v_req_sum IS NULL
+    	OR v_firstname IS NULL OR v_pass_serial IS NULL
+        OR v_pass_number IS NULL THEN
         result = -1;
         result_str = 'Ошибка: обязательные поля не заполнены';
         response = jsonb_build_object(
@@ -2087,7 +2101,7 @@ BEGIN
     END IF;
 
     -- Обработка кода подразделения паспорта
-    IF v_pass_issuer_code !~* '^\d+$' THEN
+    IF v_pass_issuer_code IS NOT NULL AND v_pass_issuer_code !~* '^\d+$' THEN
     	v_pass_issuer_code = REPLACE(v_pass_issuer_code, ' ', '');
     	v_pass_issuer_code = REPLACE(v_pass_issuer_code, '-', '');
     	v_pass_issuer_code = REPLACE(v_pass_issuer_code, '_', '');
@@ -2098,7 +2112,7 @@ BEGIN
    	END IF;
 
     -- Обработка номера телефона
-    IF LENGTH(v_phone_mobile) = 10 THEN
+    IF v_phone_mobile IS NOT NULL AND LENGTH(v_phone_mobile) = 10 THEN
     	v_phone_mobile = '+7' || v_phone_mobile;
     END IF;
 
@@ -2257,9 +2271,9 @@ BEGIN
       v_utm_content_last,
       v_req_sum,
       v_req_term,
-      UPPER(BTRIM(v_lastname, ' ')),
-      UPPER(BTRIM(v_firstname, ' ')),
-      UPPER(BTRIM(v_patronimic, ' ')),
+      UPPER(BTRIM(COALESCE(v_lastname, ''), ' ')),
+      UPPER(BTRIM(COALESCE(v_firstname, ''), ' ')),
+      UPPER(BTRIM(COALESCE(v_patronimic, ''), ' ')),
       v_birthday,
       v_phone_mobile,
       v_email,
@@ -2271,10 +2285,10 @@ BEGIN
       v_gender,
       v_pass_serial,
       v_pass_number,
-      UPPER(v_pass_issuer),
+      UPPER(COALESCE(v_pass_issuer, '')),
       v_pass_issuer_code,
       v_pass_issue_date,
-      UPPER(v_birthplace),
+      UPPER(COALESCE(v_birthplace, '')),
       v_reg_region,
       v_reg_region_key,
       v_reg_region_key_kladr,
@@ -2313,7 +2327,7 @@ BEGIN
       v_browser_version,
       v_cession_of_claims_agreed,
       v_additional_income,
-      UPPER(v_full_identification_result),
+      UPPER(COALESCE(v_full_identification_result, '')),
       v_reg_address_full,
       v_nbki_md5,
       v_equifax_md5,
@@ -2338,7 +2352,7 @@ BEGIN
         response = jsonb_build_object(
             'error', v_result_str
         )::VARCHAR;
-        GET STACKED DIAGNOSTICS v_context = PG_EXCEPTION_CONTEXT;
+        
         PERFORM api.add_log(
             'ERROR', 
             'Ошибка конвертации в parse_request_for_loanapp_review_leasing: ' || v_result_str, 
@@ -2377,9 +2391,9 @@ BEGIN
       v_application_key, 
       'Leasing', 
       v_application_key, 
-      UPPER(v_inn_result), 
+      UPPER(COALESCE(v_inn_result, '')),
       v_inn, 
-      UPPER(v_uprid_result)
+      UPPER(COALESCE(v_uprid_result, ''))
     );
 
     result = 1;

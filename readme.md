@@ -55,3 +55,18 @@ docker login
 
 # Push the image
 docker push xtetis/viva-api-u-php:latest
+
+
+
+# На бою обновить боевой контейнер
+docker compose -f ./docker-compose.work.yml pull
+
+# Опять запустить контейнер
+docker compose -f ./docker-compose.work.yml up
+
+# Или одной командой 
+docker compose -f ./docker-compose.work.yml pull && docker compose -f ./docker-compose.work.yml up
+
+
+# Если нужно запустить как демон
+docker compose -f ./docker-compose.work.yml pull && docker compose -f ./docker-compose.work.yml up -d

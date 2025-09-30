@@ -89,6 +89,16 @@ class RequestModel extends BaseModel
      */
     public $gen_hmac = '';
 
+    public $hmac_generate_request = '';
+    public $hmac_generate_string = '';
+    public $hmac_generate_string_urlencoded = '';
+    public $hmac_generate_string_b64encoded = '';
+
+    /**
+     * Добавить в отладочную информацию секретные данные
+     */
+    public $add_in_debug_info_secret_data = 0;
+
 
     /**
      * Хеш ответа
@@ -477,33 +487,48 @@ class RequestModel extends BaseModel
             return false;
         }
 
-        if (!json_validate($this->request))
-        {
-            $this->addError(
-                'request',
-                'JSON is not valid'
-            );
-
-            return false;
-        }
-
-        $this->request_array = json_decode($this->request, true);
-
         $param_value = \App\Models\ApiSqlDataModel::getSettingValue('api_secret');
         if ($param_value->result > 0)
         {
             $this->api_secret = $param_value->result_str;
         }
-        else
+
+        // Добавлять ли в отладочную информацию секретные данные
+        $this->add_in_debug_info_secret_data = 0;
+        $param_value                       = \App\Models\ApiSqlDataModel::getSettingValue('add_in_debug_info_secret_data');
+        if ($param_value->result > 0)
         {
-            $this->addError(
-                'api_secret',
-                $param_value->result_str
-            );
+            $this->add_in_debug_info_secret_data = (int) $param_value->result_str;
+        }
+
+        if (!json_validate($this->request))
+        {
+            $this->addError('request', 'JSON не валиден');
             return false;
         }
 
-        return md5(json_encode($this->request_array, JSON_UNESCAPED_UNICODE).$this->api_secret);
+
+        $this->hmac_generate_request = json_encode(json_decode($this->request,true), JSON_UNESCAPED_UNICODE);
+        $this->hmac_generate_string = $this->hmac_generate_request.$this->api_secret;
+        $this->hmac_generate_string_urlencoded = urlencode($this->hmac_generate_string);
+        $this->hmac_generate_string_b64encoded = base64_encode($this->hmac_generate_string);
+
+        if ($this->isShowDebugInfo())
+        {
+            $this->debug_info['hmac']['generate_request'] = $this->hmac_generate_request;
+            if ($this->add_in_debug_info_secret_data)
+            {
+                $this->debug_info['hmac']['api_secret'] = $this->api_secret;
+                $this->debug_info['hmac']['generate_string'] = $this->hmac_generate_string;
+                $this->debug_info['hmac']['generate_string_urlencoded'] = $this->hmac_generate_string_urlencoded;
+                $this->debug_info['hmac']['generate_string_b64encoded'] = $this->hmac_generate_string_b64encoded;                
+            }
+
+        }
+
+
+
+        return md5($this->hmac_generate_string);
     }      
 
     /**
@@ -779,16 +804,10 @@ class RequestModel extends BaseModel
                         // Теперь проверяем параметры, которые получили в get_external_connect_json
                         $external_base_data = json_decode($get_external_connect_json->result_str, true)[0];
 
-                        // Добавлять ли в отладочную информацию сведения о подключаемых БД
-                        $add_in_debug_info_db_connect_data = 0;
-                        $param_value                       = \App\Models\ApiSqlDataModel::getSettingValue('add_in_debug_info_db_connect_data');
-                        if ($param_value->result > 0)
-                        {
-                            $add_in_debug_info_db_connect_data = (int) $param_value->result_str;
-                        }
+
 
                         // Добавляем в дебаг информацию (если это определено в конфиге)
-                        if ($add_in_debug_info_db_connect_data)
+                        if ($this->add_in_debug_info_secret_data)
                         {
                             // Добавляем в дебаг информацию
                             $this->debug_info['external_base_data'][$external_connect_key] = $external_base_data;
@@ -993,6 +1012,11 @@ class RequestModel extends BaseModel
     public function runApi()
     {
         global $check_model;
+
+        $this->debug_info['request_body'] = file_get_contents('php://input');
+        $this->debug_info['request_url'] = $_SERVER['REQUEST_URI'];
+        $this->debug_info['request_method'] = $_SERVER['REQUEST_METHOD'];
+        $this->debug_info['post'] = $_POST;
        
 
         if ($this->hasErrors())
@@ -1031,14 +1055,50 @@ class RequestModel extends BaseModel
             return false;
         }
 
-
-
         $this->set_request_log_key = $set_request_log->result;
+
+
+        // Проверяем наличие метода
+        if (!strlen($this->method))
+        {
+            $this->addError(
+                'method',
+                'Метод не указан'
+            );
+
+            return false;
+        }
+
+        // Проверяет наличие метода и загружает его в переменную $this->current_method
+        if (!$this->loadCurrentMethod())
+        {
+            return false;
+        }
+
+        // Добавляем в БД сведения о запросе
+        $set_request_log = \App\Models\ApiSqlDataModel::setRequestLog(
+            [
+                'request_log_key' => $this->set_request_log_key,
+                'method_key'      => $this->current_method['method_key'],
+            ]
+        );
+        if ($set_request_log->result < 0)
+        {
+            $this->addError(
+                'set_request_log',
+                'set_request_log: ' . $set_request_log->result_str
+            );
+
+            return false;
+        }
 
         // Доделать проверку на эмуляцию ответа
 
         $this->request_post = strval($this->request_post);
         $this->request_body = strval($this->request_body);
+
+        $this->debug_info['_request_post'] = $this->request_post;
+        $this->debug_info['_request_body'] = $this->request_body;
 
         if (strlen($this->request_post))
         {
@@ -1051,19 +1111,11 @@ class RequestModel extends BaseModel
 
         $this->request = trim($this->request);
 
+        $this->debug_info['_request'] = $this->request;
+
         $this->request = strval($this->request);
         $this->method  = strval($this->method);
 
-        // Добавляем в БД сведения о запросе
-        /*
-        $this->add_service_request = SqlDataModel::addServiceRequest(
-            [
-                'method'      => $this->method,
-                'request'     => $this->request,
-                'files_info'  => json_encode($_FILES, JSON_UNESCAPED_UNICODE),
-            ]
-        );
-        */
 
         $set_request_log = \App\Models\ApiSqlDataModel::setRequestLog(
             [
@@ -1082,22 +1134,6 @@ class RequestModel extends BaseModel
             return false;
         }
 
-        // Проверяем наличие метода
-        if (!strlen($this->method))
-        {
-            $this->addError(
-                'method',
-                'Метод не указан'
-            );
-
-            return false;
-        }
-
-        // Проверяет наличие метода и загружает его в переменную $this->current_method
-        if (!$this->loadCurrentMethod())
-        {
-            return false;
-        }
 
 
 
@@ -1124,8 +1160,13 @@ class RequestModel extends BaseModel
             return false;
         }
 
+        $this->debug_info['enable_hmac'] = $this->enable_hmac;
+
         if ($this->enable_hmac)
         {
+            $this->debug_info['gen_hmac'] = $this->gen_hmac;
+            $this->debug_info['hmac'] = $this->hmac;
+
             // Проверяем HMAC
             if ($this->gen_hmac != $this->hmac)
             {
@@ -1138,6 +1179,14 @@ class RequestModel extends BaseModel
             }   
         }
 
+
+        // Добавлять ли в отладочную информацию секретные данные
+        $this->add_in_debug_info_secret_data = 0;
+        $param_value                       = \App\Models\ApiSqlDataModel::getSettingValue('add_in_debug_info_secret_data');
+        if ($param_value->result > 0)
+        {
+            $this->add_in_debug_info_secret_data = (int) $param_value->result_str;
+        }
 
 
         $this->debug_info['current_method'] = $this->current_method;
@@ -1160,7 +1209,6 @@ class RequestModel extends BaseModel
         $set_request_log = \App\Models\ApiSqlDataModel::setRequestLog(
             [
                 'request_log_key' => $this->set_request_log_key,
-                'method_key'      => $this->current_method['method_key'],
                 'request'         => $this->request,
             ]
         );
@@ -1349,9 +1397,14 @@ class RequestModel extends BaseModel
                             ]
                         );
                     } catch (\Throwable $th) {
-                        //throw $th;
+                        $this->debug_info['set_request_log'][] = $th->getMessage();
                     }
 
+                    // Возвращать ли дебаг информацию
+                    if ($this->isShowDebugInfo())
+                    {
+                        $ret['debug_info'] = $this->debug_info;
+                    }
 
                     return $ret;
                 }
@@ -1396,8 +1449,14 @@ class RequestModel extends BaseModel
                         ]);
                     } catch (\Throwable $th) {
                         //throw $th;
+                        $this->debug_info['set_request_log'][] = $th->getMessage();
                     }
 
+                    // Возвращать ли дебаг информацию
+                    if ($this->isShowDebugInfo())
+                    {
+                        $ret['debug_info'] = $this->debug_info;
+                    }
 
                     return $ret;
                 }

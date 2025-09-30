@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS  api.request_log CASCADE;
 DROP TABLE IF EXISTS  api.method_example CASCADE;
 DROP TABLE IF EXISTS  api.method_request_func CASCADE;
 DROP TABLE IF EXISTS  api.method_setting CASCADE;
+DROP TABLE IF EXISTS  api.service_request_log CASCADE;
 
 
 

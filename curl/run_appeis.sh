@@ -1,0 +1,20 @@
+curl 'https://vd-appeis-vip.vd.ru/api/v2/check_client_data' \
+  -k  \
+  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'Accept-Language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,uk;q=0.6' \
+  -H 'Cache-Control: max-age=0' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -b 'visitor_id=9a023f793b5054e96b2a286e98fd471361; _ym_uid=1742936360628378340; _ym_d=1750666164; PHPSESSID=kbhl24ul0qb59905896h6pg0ro; _csrf=2d428eb38d019bc6dd68839414101cc15f3b7cbe1f3e8f2600d72edb9811c443a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v4MBkSJvDKtQ5XSYlXyrR1sMfhUfEtNQ%22%3B%7D' \
+  -H 'Origin: https://vd-appeis-vip.vd.ru' \
+  -H 'Referer: https://vd-appeis-vip.vd.ru/test/v2' \
+  -H 'Sec-Fetch-Dest: document' \
+  -H 'Sec-Fetch-Mode: navigate' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Sec-Fetch-User: ?1' \
+  -H 'Upgrade-Insecure-Requests: 1' \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  --data-raw 'request=%7B%22business-key%22%3A%22abcdef-ghijklmop-qrstuv-wxyz%22%2C%22req_sum%22%3A%2240000.00%22%2C%22req_term%22%3A%2212M%22%2C%22lastname%22%3A%22%D0%98%D0%92%D0%90%D0%9D%D0%9E%D0%92%22%2C%22firstname%22%3A%22%D0%98%D0%92%D0%90%D0%9D%22%2C%22patronimic%22%3A%22%D0%98%D0%92%D0%90%D0%9D%D0%9E%D0%92%D0%98%D0%A7%22%2C%22birthday%22%3A%2201.01.2000%22%2C%22phone_mobile%22%3A%22%2B79111111111%22%2C%22email%22%3A%22ivanov1%40mail.ru%22%2C%22inn%22%3A%2212345678910%22%2C%22gender%22%3A%22M%22%2C%22pass_serial%22%3A%222220%22%2C%22pass_number%22%3A%22000000%22%2C%22pass_issuer%22%3A%22%D0%9C%D0%BE%D1%81%D0%BA%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%BC+%D0%A0%D0%9E%D0%92%D0%94%22%2C%22pass_issuer_code%22%3A%22111-111%22%2C%22pass_issue_date%22%3A%2210.10.2005%22%2C%22birthplace%22%3A%22%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%22%2C%22reg_address%22%3A%22%D0%91%D0%B0%D0%B9%D0%BA%D0%BE%D0%BD%D1%83%D1%80+%D0%B3.%2C+%D1%83%D0%BB.+%D0%B8%D0%BC+%D0%93%D0%B5%D0%BD%D0%B5%D1%80%D0%B0%D0%BB-%D0%BF%D0%BE%D0%BB%D0%BA%D0%BE%D0%B2%D0%BD%D0%B8%D0%BA%D0%B0+%D0%90.%D0%90.%D0%9C%D0%B0%D0%BA%D1%81%D0%B8%D0%BC%D0%BE%D0%B2%D0%B0%2C+%D0%B4.+12%D0%B0%2C+123%22%2C%22fact_address%22%3A%22%D0%91%D0%B0%D0%B9%D0%BA%D0%BE%D0%BD%D1%83%D1%80+%D0%B3.%2C+%D1%83%D0%BB.+%D0%B8%D0%BC+%D0%93%D0%B5%D0%BD%D0%B5%D1%80%D0%B0%D0%BB-%D0%BF%D0%BE%D0%BB%D0%BA%D0%BE%D0%B2%D0%BD%D0%B8%D0%BA%D0%B0+%D0%90.%D0%90.%D0%9C%D0%B0%D0%BA%D1%81%D0%B8%D0%BC%D0%BE%D0%B2%D0%B0%2C+%D0%B4.+12%D0%B0%2C+123%22%2C%22family_status%22%3A%22MARRIED%22%2C%22emloyment_type%22%3A%22EMPLOYED%22%2C%22organization_type%22%3A%22COMMERCIAL_ORGANIZATION%22%2C%22company_occupation%22%3A%22COMMERCE%22%2C%22position_type%22%3A%22MANAGEMENT%22%2C%22last_work_term%22%3A%222Y_AND_MORE%22%2C%22monthly_income%22%3A%2250000.00%22%7D&hmac=a295e12a92f538e54f2e7a6588249416' > appeis.json

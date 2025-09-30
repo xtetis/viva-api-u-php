@@ -127,8 +127,6 @@ class TestController extends BaseController
             $request = request();
 
             $model          = new \App\Models\RequestModel();
-            
-
             $model->request = strval($request->input('request', ''));
             $hmac           = $model->getHmac();
             if ($model->hasErrors())
@@ -140,8 +138,9 @@ class TestController extends BaseController
             {
                 $ret['result']     = true;
                 $ret['result_str'] = $hmac;
-                $ret['secret'] = $model->api_secret;
-                $ret['request'] = json_encode($model->request_array, JSON_UNESCAPED_UNICODE);
+                $ret['hmac_generate_request'] = $model->hmac_generate_request;
+
+                $ret['debug_info'] = $model->debug_info;
             }
         }
         catch (\Exception $e)

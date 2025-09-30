@@ -20,6 +20,15 @@ try {
 }
 
 
+if ($checked_init_data)
+{
+    try {
+        \App\Models\ApiSqlDataModel::addServiceRequestLog();
+    } catch (\Throwable $th) {
+        die($th->getMessage());
+    }
+}
+
 
 // Если главная страница - сначала проверяем настройки
 // для POST запросов / нужно предусмотреть обработку method как POST параметра
@@ -35,8 +44,6 @@ Route::get('/', function ()
     {
         return redirect('/test/api');
     }
-
-    
 });
 
 // Проверочная страница
@@ -136,6 +143,16 @@ Route::any('/test/ajax_get_hmac', function ()
 // Это API метод. Тут мы не проверяем настройки, а проверяем их 
 // уже внутри самого запроса и отдаем как JSON
 Route::any('/api/{method}', function ($method)
+{
+    $api_controller = new \App\Http\Controllers\ApiController();
+    return $api_controller->runMethod($method);
+})->where(['method' => '[a-z_0-9]+']);
+
+
+
+// Это API метод. Тут мы не проверяем настройки, а проверяем их 
+// уже внутри самого запроса и отдаем как JSON
+Route::any('/api/v2/{method}', function ($method)
 {
     $api_controller = new \App\Http\Controllers\ApiController();
     return $api_controller->runMethod($method);

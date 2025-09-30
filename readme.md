@@ -61,6 +61,10 @@ docker push xtetis/viva-api-u-php:latest
 # На бою обновить боевой контейнер
 docker compose -f ./docker-compose.work.yml pull
 
+# В директории с docker-compose.yml обновить контейнер
+docker compose pull
+docker compose up -d
+
 # Опять запустить контейнер
 docker compose -f ./docker-compose.work.yml up
 

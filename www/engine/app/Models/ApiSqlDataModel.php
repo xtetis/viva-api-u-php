@@ -272,4 +272,26 @@ class ApiSqlDataModel
 
         return $row;
     }
+
+
+
+    /**
+     * Добавляет запись в журнал о запросе
+     * 
+     */
+    public static function addServiceRequestLog(
+    )
+    {
+        
+        $result = DB::connection('api_db')->select(
+            'select * FROM api.add_service_request_log(?, ?, ?, ? )',
+            [
+                $_SERVER['REQUEST_URI'],
+                file_get_contents('php://input'),
+                json_encode($_GET, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT),
+                json_encode($_POST, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT),
+            ],
+        );
+
+    }
 }

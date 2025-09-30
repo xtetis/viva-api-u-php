@@ -63,6 +63,69 @@ END;
 $function$
 ;
 
+-- DROP FUNCTION api.add_service_request_log(in varchar, in varchar, in varchar, in varchar, out int4, out varchar);
+
+CREATE OR REPLACE FUNCTION api.add_service_request_log(_request_url character varying, _request_body character varying, _get_params character varying, _post_params character varying, OUT result integer, OUT result_str character varying)
+ RETURNS record
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+    v__context varchar;
+	v__rec__param RECORD;
+	v__enable_service_request_log INTEGER;
+BEGIN
+
+	SELECT 
+		*
+	FROM
+		api.get_param('enable_service_request_log')
+	INTO
+		v__rec__param;
+
+	IF v__rec__param.result < 0 THEN
+		result = -1;
+		result_str = v__rec__param.result_str;
+		RETURN;
+	END IF;
+
+	v__enable_service_request_log = v__rec__param.result_str::INTEGER;
+
+	
+	IF v__enable_service_request_log != 0 THEN
+		INSERT INTO api.service_request_log(
+			request_url, 
+			request_body, 
+			get_params, 
+			post_params
+		)
+		VALUES(
+			_request_url, 
+			_request_body, 
+			_get_params, 
+			_post_params
+		);
+
+		result = 1;
+		result_str = 'OK';
+	ELSE
+		result = 0;
+		result_str = 'OK';
+	END IF;
+
+
+EXCEPTION
+    WHEN OTHERS THEN
+        result = -1;
+        result_str = SQLERRM;
+        GET STACKED DIAGNOSTICS v__context = PG_EXCEPTION_CONTEXT;
+        PERFORM
+            api.add_log('ERROR', 'Неожиданная ошибка в add_service_request_log', 'add_service_request_log', jsonb_build_object('sql_error', SQLERRM), v__context);
+END;
+
+$function$
+;
+
 -- DROP FUNCTION api.check_db_params(out int4, out varchar);
 
 CREATE OR REPLACE FUNCTION api.check_db_params(OUT result integer, OUT result_str character varying)
@@ -81,12 +144,13 @@ BEGIN
 	v__required_params = '{}'::VARCHAR[];
 	v__required_params = ARRAY_APPEND(v__required_params,'api_title_short');
 	v__required_params = ARRAY_APPEND(v__required_params,'show_debug_info');
-	v__required_params = ARRAY_APPEND(v__required_params,'add_in_debug_info_db_connect_data');
+	v__required_params = ARRAY_APPEND(v__required_params,'add_in_debug_info_secret_data');
 	v__required_params = ARRAY_APPEND(v__required_params,'log_service_request_body');
 	v__required_params = ARRAY_APPEND(v__required_params,'log_service_post');
 	v__required_params = ARRAY_APPEND(v__required_params,'enable_hmac');
 	v__required_params = ARRAY_APPEND(v__required_params,'api_secret');
 	v__required_params = ARRAY_APPEND(v__required_params,'show_log_fields');
+	v__required_params = ARRAY_APPEND(v__required_params,'enable_service_request_log');
 
 
 	FOREACH v__param_name IN ARRAY v__required_params LOOP

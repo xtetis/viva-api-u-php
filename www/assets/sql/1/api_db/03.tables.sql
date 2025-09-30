@@ -302,3 +302,26 @@ COMMENT ON COLUMN api.request_log.service_request_body IS 'Тело запрос
 COMMENT ON COLUMN api.request_log.service_post IS 'POST параметры в виде JSON';
 COMMENT ON COLUMN api.request_log.service_request_url IS 'Урл запроса к сервису';
 COMMENT ON COLUMN api.request_log.method_name IS 'Имя метода';
+
+
+
+
+CREATE TABLE api.service_request_log (
+	service_request_log_key int4 DEFAULT nextval('api.service_log_service_log_key_seq'::regclass) NOT NULL, -- Первичный ключ
+	created_on timestamp DEFAULT clock_timestamp() NULL, -- Дата время создания записи
+	request_url varchar NULL, -- Урл запроса
+	request_body varchar NULL, -- Тело запроса
+	get_params varchar NULL, -- GET параметры
+	post_params varchar NULL, -- POST параметры
+	CONSTRAINT service_log_pk PRIMARY KEY (service_request_log_key)
+);
+COMMENT ON TABLE api.service_request_log IS 'Список запросов к сервису (для отладки)';
+
+-- Column comments
+
+COMMENT ON COLUMN api.service_request_log.service_request_log_key IS 'Первичный ключ';
+COMMENT ON COLUMN api.service_request_log.created_on IS 'Дата время создания записи';
+COMMENT ON COLUMN api.service_request_log.request_url IS 'Урл запроса';
+COMMENT ON COLUMN api.service_request_log.request_body IS 'Тело запроса';
+COMMENT ON COLUMN api.service_request_log.get_params IS 'GET параметры';
+COMMENT ON COLUMN api.service_request_log.post_params IS 'POST параметры';

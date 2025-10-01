@@ -307,7 +307,7 @@ COMMENT ON COLUMN api.request_log.method_name IS 'Имя метода';
 
 
 CREATE TABLE api.service_request_log (
-	service_request_log_key int4 DEFAULT nextval('api.service_log_service_log_key_seq'::regclass) NOT NULL, -- Первичный ключ
+	service_request_log_key serial4 NOT NULL, -- Первичный ключ
 	created_on timestamp DEFAULT clock_timestamp() NULL, -- Дата время создания записи
 	request_url varchar NULL, -- Урл запроса
 	request_body varchar NULL, -- Тело запроса

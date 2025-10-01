@@ -61,8 +61,8 @@ INSERT INTO api.external_connect (external_connect_key,connect_name) VALUES
 	 (2,'api_db');
 INSERT INTO api.external_connect_params (external_connect_param_key,created_on,db_host,db_port,db_username,db_password,db_database,inner_db_type,external_connect_key) VALUES
 	 (1,'2025-09-23 13:50:28.827235','172.17.0.1','5432','tetis','j3qq4h7h2v','api_db','DEV',2),
-	 (2,'2025-09-24 13:16:42.147234','vd-dbdev02.vd.ru','5432','ois_user','hOtzTb7n%oyLNmKN','asuz','DEV',1),
-	 (3,'2025-09-24 15:37:10.247353','vd-dbasuz01.vd.ru','5432','ois_user','hOtzTb7n%oyLNmKN','asuz','WORK',1);
+	 (2,'2025-09-24 13:16:42.147234','vd-dbdev02.vd.ru','5432','ois_user','','asuz','DEV',1),
+	 (3,'2025-09-24 15:37:10.247353','vd-dbasuz01.vd.ru','5432','ois_user','','asuz','WORK',1);
 
 
 

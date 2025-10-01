@@ -12,6 +12,16 @@ CREATE TABLE api.dic_param (
 	CONSTRAINT dic_param_pkey PRIMARY KEY (param_key)
 );
 
+COMMENT ON COLUMN api.dic_param.param_key IS 'Первичный ключ';
+COMMENT ON COLUMN api.dic_param.param_name IS 'Имя параметра (латиница)';
+COMMENT ON COLUMN api.dic_param.param_descr IS 'Описание параметра';
+COMMENT ON COLUMN api.dic_param.active IS 'Активность записи';
+COMMENT ON COLUMN api.dic_param.created_on IS 'Дата время создания записи';
+
+
+COMMENT ON TABLE api.dic_param IS 'Список параметров для работы сервиса';
+
+
 
 -- api.external_connect определение
 
@@ -51,6 +61,7 @@ CREATE TABLE api.logs (
 	CONSTRAINT logs_pkey PRIMARY KEY (log_key)
 );
 
+COMMENT ON TABLE api.logs IS 'Список логов при работе сервиса';
 
 -- api.method_request_func_type определение
 
@@ -71,6 +82,8 @@ COMMENT ON COLUMN api.method_request_func_type.method_request_func_type_key IS '
 COMMENT ON COLUMN api.method_request_func_type.type_name IS 'Имя типа метода (латиницей)';
 COMMENT ON COLUMN api.method_request_func_type.title IS 'Описание типа метода';
 COMMENT ON COLUMN api.method_request_func_type.created_on IS 'Дата время создания записи';
+
+COMMENT ON TABLE api.method_request_func_type IS 'Список типов функций (разные типы выполняются в разное этап выполнения метода)';
 
 
 -- api.methods определение
@@ -94,6 +107,8 @@ CREATE TABLE api.methods (
 	CONSTRAINT check_response_type CHECK (((response_type IS NULL) OR ((response_type)::text = 'eis'::text))),
 	CONSTRAINT method_pkey PRIMARY KEY (method_key)
 );
+
+COMMENT ON TABLE api.methods IS 'Список методов сервиса';
 
 -- Column comments
 
@@ -127,6 +142,16 @@ CREATE TABLE api.dic_param_values (
 	CONSTRAINT dic_param_values_pkey PRIMARY KEY (param_value_key),
 	CONSTRAINT dic_param_values_dic_param_fk FOREIGN KEY (param_key) REFERENCES api.dic_param(param_key) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+
+COMMENT ON TABLE api.dic_param_values IS 'Список значений параметров для работы сервиса';
+COMMENT ON COLUMN api.dic_param_values.param_value_key IS 'Первичный ключ';
+COMMENT ON COLUMN api.dic_param_values.param_key IS 'Ключ параметра';
+COMMENT ON COLUMN api.dic_param_values.param_value IS 'Значение параметра';
+COMMENT ON COLUMN api.dic_param_values.param_category IS 'Категория DEV | WORK';
+COMMENT ON COLUMN api.dic_param_values.active IS 'Активность записи';
+COMMENT ON COLUMN api.dic_param_values.created_on IS 'Дата время создания записи';
+COMMENT ON COLUMN api.dic_param_values.descr IS 'Описание';
 
 
 -- api.external_connect_params определение
@@ -165,6 +190,9 @@ COMMENT ON COLUMN api.external_connect_params.inner_db_type IS 'Тип подк�
 COMMENT ON COLUMN api.external_connect_params.external_connect_key IS 'К какому коннекту принадлежит эти настройки коннекта';
 
 
+COMMENT ON TABLE api.external_connect_params IS 'Список параметров коннекта в зависимости от типа бд DEV | WORK';
+
+
 -- api.method_example определение
 
 -- Drop table
@@ -196,6 +224,8 @@ COMMENT ON COLUMN api.method_example.json_example IS 'Тело примера';
 COMMENT ON COLUMN api.method_example.example_name IS 'Название примера';
 COMMENT ON COLUMN api.method_example.active IS 'Активность записи';
 
+
+COMMENT ON TABLE api.method_example IS 'Список примеров для методов (в тестовой форме можно загрузить пример, а потом его выполнить)';
 
 -- api.method_request_func определение
 
@@ -256,6 +286,9 @@ CREATE TABLE api.method_setting (
 CREATE INDEX method_setting_active_idx ON api.method_setting USING btree (active);
 CREATE INDEX method_setting_db_type_idx ON api.method_setting USING btree (db_type);
 CREATE INDEX method_setting_method_key_idx ON api.method_setting USING btree (method_key);
+
+COMMENT ON TABLE api.method_setting IS 'Список настроек методов в зависимости от типа БД (DEV | WORK)';
+
 
 -- Column comments
 

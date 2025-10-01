@@ -1,389 +1,399 @@
 
+  
+
 ### Универсальный API (специально для VIVA)
 
+  
+
 #### Общая информация
+
 API сервис предстваляет собой Docker контейнер, который работает в связке с базой PostgreSQL (где хранятся настройки API сервиса).
 
+  
+
 #### Базовые настройки сервиса
-1. **API_DB_HOST** — хост базы данных (обязательный параметр)
-2. **API_DB_PORT** — Порт базы данных (обязательный параметр)
-3. **API_DB_DATABASE** — Имя базы данных (обязательный параметр)
-4. **API_DB_USERNAME** — Логин базы данных (обязательный параметр)
-5. **API_DB_PASSWORD** — Пароль базы данных (обязательный параметр)
-6. **APP_DEBUG** — Включить ли режим отладки (необязательный параметр)
-7. **APP_SCHEME** — Схема доступа к приложению (обязательный параметр)
-8. **APP_ENABLE_HTTP_BASE_AUTH** — Включить ли базовую авторизацию для доступа к тестовым страницам (обязательный параметр)
-9. **HTTP_BASE_LOGIN** — Логин базового пользователя (является обязательным параметром если включена базовая авторизация)
-10. **HTTP_BASE_PASSWORD** — MD5 хэш пароля базового пользователя (является обязательным параметром если включена базовая авторизация) 
 
-Базовые настройки сервиса хранятся в 
- - docker-compose.dev.eis.yml
- - docker-compose.dev.local.yml
- - docker-compose.work.yml
+1.  **API_DB_HOST** — хост базы данных (обязательный параметр)
 
-При этом, на DEV контуре, правильно использовать docker-compose.dev.eis.yml, предварительно создав на файл символическую ссылку 
-```sh  
-ln -s ./docker-compose.dev.eis.yml docker-compose.yml 
+2.  **API_DB_PORT** — Порт базы данных (обязательный параметр)
+
+3.  **API_DB_DATABASE** — Имя базы данных (обязательный параметр)
+
+4.  **API_DB_USERNAME** — Логин базы данных (обязательный параметр)
+
+5.  **API_DB_PASSWORD** — Пароль базы данных (обязательный параметр)
+
+6.  **APP_DEBUG** — Включить ли режим отладки (необязательный параметр)
+
+7.  **APP_SCHEME** — Схема доступа к приложению (обязательный параметр)
+
+8.  **APP_ENABLE_HTTP_BASE_AUTH** — Включить ли базовую авторизацию для доступа к тестовым страницам (обязательный параметр)
+
+9.  **HTTP_BASE_LOGIN** — Логин базового пользователя (является обязательным параметром если включена базовая авторизация)
+
+10.  **HTTP_BASE_PASSWORD** — MD5 хэш пароля базового пользователя (является обязательным параметром если включена базовая авторизация)
+
+  
+
+Базовые настройки сервиса хранятся в
+
+- docker-compose.dev.eis.yml
+
+- docker-compose.dev.local.yml
+
+- docker-compose.work.yml
+
+  
+
+При этом, на DEV контуре, правильно использовать docker-compose.dev.eis.yml, предварительно создав на файл символическую ссылку
+
+```sh
+
+ln  -s  ./docker-compose.dev.eis.yml  docker-compose.yml
+
 ```
+
 Таким образом, при перезапуске автоматически будет использоваться корректный yml файл
 
-На PROD контуре , правильно использовать docker-compose.work.yml, предварительно создав на файл символическую ссылку 
-```sh  
-ln -s ./docker-compose.work.yml docker-compose.yml 
+  
+
+На PROD контуре , правильно использовать docker-compose.work.yml, предварительно создав на файл символическую ссылку
+
+```sh
+
+ln  -s  ./docker-compose.work.yml  docker-compose.yml
+
 ```
 
+  
+  
 
 #### Скрипты для работы с контейнером
-1. **sh__build_push_container.sh** — сборка контейнера со скриптыми внутри (полностью изолированный)
-2. **sh__pull_container.sh** — получение из DockerHub обновленной версии контейнера
-3. **sh__run_container__daemon.sh** — запуск контейнера как демон (с четким именем контейнера)
-4. **sh__run_container__process.sh** — запуск контейнера как процесс (при завершении процесса и контейнер будет остановлен)
-5. **sh__stop_container__daemon.sh** — остановка контейнера (используется когда контейнер работает как демон) по имени контейнера
 
- 
+1.  **sh__build_push_container.sh** — сборка контейнера со скриптыми внутри (полностью изолированный)
+
+2.  **sh__pull_container.sh** — получение из DockerHub обновленной версии контейнера
+
+3.  **sh__run_container__daemon.sh** — запуск контейнера как демон (с четким именем контейнера)
+
+4.  **sh__run_container__process.sh** — запуск контейнера как процесс (при завершении процесса и контейнер будет остановлен)
+
+5.  **sh__stop_container__daemon.sh** — остановка контейнера (используется когда контейнер работает как демон) по имени контейнера
+
+  
+
 #### Настройки сервиса
+
 Основные настройки сервиса хранятся в БД, параметры подключения к которой указываются в YML файле.
+
+  
 
 Ввиду того, что права на выполнение скриптов в БД ограничиваются политикой компании - разворачивание БД автоматически невозможно. Потому нужен пользователь с соответствующими правами.
 
+  
+
 После запуска контейнера, даже если какие-то настройки будут некорректно указаны - при обращении к сервису происходит проверка параметров и уведомление пользователя о некорректности параметров.
+
+  
 
 В скрипты для разворачивания функционала в БД расположены в **api/www/assets/sql/** (при этом в настройках внешнего подключения необходимо указывать пароли - это в таблице *api.external_connect_params*)
 
+  
 
+========================================================
 
-Запрос состоит из объекта `request` с необходимыми параметрами и поля `from`, определяющего источник данных:
-- `from`:
-  - `1` — получение данных напрямую от партнера (результат сохраняется в базу данных).
-  - `2` — получение данных из базы данных, при их отсутствии — запрос к партнеру.
-  - `3` — получение данных из базы данных, при их отсутствии возвращается пустой ответ.
+  
+### Описание таблиц базы данных
 
-#### Примеры запросов
-- **Для `service_bs_company_v2`:**
-  ```json
-  {
-      "request": {
-          "company": {
-              "name": "АО ОКБ",
-              "inn": "7710561081",
-              "ogrn": "1047796788819"
-          },
-          "consent": {
-              "received_at": "2020-10-15",
-              "responsibility_flag": true,
-              "was_received": true
-          }
-      },
-      "from": 1
-  }
-  ```
-- **Для `service_entrepreneur_v1`:**
-  ```json
-  {
-      "request": {
-          "inn": "273453701673",
-          "person": {
-              "name": "ФЕДОР",
-              "surname": "ГЛЕБЧЕНКО",
-              "patronymic": "БОРИСОВИЧ",
-              "birthday": "1971-08-12",
-              "passport": {
-                  "serial": "4511",
-                  "number": "258974",
-                  "issued_at": "2014-09-14"
-              }
-          },
-          "consent": {
-              "received_at": "1900-01-01",
-              "was_received": true,
-              "responsibility_flag": true
-          }
-      },
-      "from": 1
-  }
-  ```
+Ниже приведён список таблиц и их назначение в базе данных API.
 
-#### Варианты отправки запросов
-1. Отправка на корневой URL сервиса (**https://okb-dev.vivadengi.ru/**), где `method` и `request` передаются как POST-параметры.
-2. Отправка на адрес **/api/{method}**, где `{method}` — имя метода, а `request` — POST-параметр.
-3. Отправка на адрес **/api/{method}**, где `{method}` — имя метода, а `request` — тело запроса.
+## 1. `api.dic_param`
+**Описание:** Список параметров для работы сервиса.  
+**Назначение:** Хранит параметры, используемые сервисом, с их именами, описаниями и статусом активности.  
+**Поля:**
+- `param_key` — Первичный ключ.
+- `param_name` — Имя параметра (на латинице).
+- `param_descr` — Описание параметра.
+- `active` — Активность записи (1 — активно, 0 — неактивно).
+- `created_on` — Дата и время создания записи.
 
-#### Директории
-- Примеры JSON-запросов: `/var/www/okb-dev.vivadengi.ru/assets/data/json_example`
-- Валидаторы JSON-запросов: `/var/www/okb-dev.vivadengi.ru/assets/data/json_schema`
-- Описания запросов: `/var/www/okb-dev.vivadengi.ru/assets/data/html_description`
+## 2. `api.dic_param_values`
+**Описание:** Список значений параметров для работы сервиса.  
+**Назначение:** Хранит значения параметров, связанных с таблицей `dic_param`, с указанием категории (DEV, WORK, PREDRELEASE) и статуса активности.  
+**Поля:**
+- `param_value_key` — Первичный ключ.
+- `param_key` — Ключ параметра (связь с `dic_param`).
+- `param_value` — Значение параметра.
+- `param_category` — Категория параметра (DEV, WORK, PREDRELEASE).
+- `active` — Активность записи (1 — активно, 0 — неактивно).
+- `created_on` — Дата и время создания записи.
+- `descr` — Описание значения.
 
-#### Примеры cURL-запросов
-- **Для `service_bs_company_v2`:**
-  ```bash
-  curl --location -g '{{HOST}}/api/service_bs_company_v2' \
-  --data '{
-      "request": {
-          "company": {
-              "name": "АО ОКБ",
-              "inn": "7710561081",
-              "ogrn": "1047796788819"
-          },
-          "consent": {
-              "received_at": "2020-10-15",
-              "responsibility_flag": true,
-              "was_received": true
-          }
-      },
-      "from": 1
-  }'
-  ```
-- **Для `service_entrepreneur_v1`:**
-  ```bash
-  curl --location -g '{{HOST}}/api/service_entrepreneur_v1' \
-  --data '{
-      "request": {
-          "inn": "273453701673",
-          "person": {
-              "name": "ФЕДОР",
-              "surname": "ГЛЕБЧЕНКО",
-              "patronymic": "БОРИСОВИЧ",
-              "birthday": "1971-08-12",
-              "passport": {
-                  "serial": "4511",
-                  "number": "258974",
-                  "issued_at": "2014-09-14"
-              }
-          },
-          "consent": {
-              "received_at": "1900-01-01",
-              "was_received": true,
-              "responsibility_flag": true
-          }
-      },
-      "from": 1
-  }'
-  ```
+## 3. `api.external_connect`
+**Описание:** Список коннектов.  
+**Назначение:** Хранит информацию о внешних подключениях к базам данных или сервисам.  
+**Поля:**
+- `external_connect_key` — Первичный ключ.
+- `connect_name` — Имя подключения (уникальное).
 
-#### Примеры ответов
-- **Для `service_bs_company_v2`:**
-  ```json
-  {
-      "result": 1,
-      "result_str": "OK",
-      "run_data": {
-          "web_request": false,
-          "partner_response_data": {
-              "status": true,
-              "data": {
-                  "params": {
-                      "score": 5,
-                      "probability": 0.45,
-                      "variables": {
-                          "basic_info": 110,
-                          "courts": -44,
-                          "finance": 27,
-                          "leaders": -4,
-                          "lpr_ch": 42,
-                          "credit_activity": 72,
-                          "credit_delays": -1,
-                          "kinds_of_activity": null
-                      }
-                  },
-                  "is_hit": true
-              },
-              "message": "OK",
-              "response_ids": [],
-              "request_id": "1220e6e0-adb7-4937-8644-c3f3270edfef"
-          },
-          "service_request_key": 75,
-          "service_message": "Данные получены от партнера"
-      }
-  }
-  ```
-- **Для `service_entrepreneur_v1`:**
-  ```json
-  {
-      "result": 1,
-      "result_str": "OK",
-      "run_data": {
-          "web_request": false,
-          "partner_response_data": {
-              "data": {
-                  "params": {
-                      "variables": {
-                          "structure": 1.2343,
-                          "credit_delays": 1.2343,
-                          "credit_activity": 1.2343,
-                          "bank_requests": 1.2343,
-                          "execution_proceedings": 1.2343
-                      },
-                      "probability": 1.2343,
-                      "score": 1.2343
-                  },
-                  "is_hit": true
-              },
-              "message": "OK"
-          },
-          "service_request_key": 77,
-          "service_message": "Данные получены от партнера"
-      }
-  }
-  ```
+## 4. `api.external_connect_params`
+**Описание:** Список параметров коннекта в зависимости от типа базы данных (DEV, WORK).  
+**Назначение:** Хранит настройки подключения к внешним базам данных, включая хост, порт, имя базы, пользователя и пароль.  
+**Поля:**
+- `external_connect_param_key` — Первичный ключ.
+- `created_on` — Дата и время создания записи.
+- `db_host` — Хост подключения.
+- `db_port` — Порт подключения.
+- `db_username` — Пользователь для подключения.
+- `db_password` — Пароль для подключения.
+- `db_database` — Имя базы данных.
+- `inner_db_type` — Тип подключения (DEV, WORK).
+- `external_connect_key` — Ключ соединения (связь с `external_connect`).
 
-#### Схемы валидации JSON
-- **Для `service_bs_company_v2`:**
-  ```json
-  {
-      "$schema": "http://json-schema.org/draft-04/schema#",
-      "type": "object",
-      "properties": {
-          "request": {
-              "type": "object",
-              "properties": {
-                  "company": {
-                      "type": "object",
-                      "properties": {
-                          "name": {"type": "string"},
-                          "inn": {"type": "string"},
-                          "ogrn": {"type": "string"}
-                      },
-                      "required": ["name", "inn", "ogrn"]
-                  },
-                  "consent": {
-                      "type": "object",
-                      "properties": {
-                          "received_at": {"type": "string"},
-                          "responsibility_flag": {"type": "boolean"},
-                          "was_received": {"type": "boolean"}
-                      },
-                      "required": ["received_at", "responsibility_flag", "was_received"]
-                  }
-              },
-              "required": ["company", "consent"]
-          },
-          "from": {"type": "integer"}
-      },
-      "required": ["request", "from"]
-  }
-  ```
-- **Для `service_entrepreneur_v1`:**
-  ```json
-  {
-      "$schema": "http://json-schema.org/draft-04/schema#",
-      "type": "object",
-      "properties": {
-          "request": {
-              "type": "object",
-              "properties": {
-                  "inn": {"type": "string"},
-                  "person": {
-                      "type": "object",
-                      "properties": {
-                          "name": {"type": "string"},
-                          "surname": {"type": "string"},
-                          "patronymic": {"type": "string"},
-                          "birthday": {"type": "string"},
-                          "passport": {
-                              "type": "object",
-                              "properties": {
-                                  "serial": {"type": "string"},
-                                  "number": {"type": "string"},
-                                  "issued_at": {"type": "string"}
-                              },
-                              "required": ["serial", "number", "issued_at"]
-                          }
-                      },
-                      "required": ["name", "surname", "patronymic", "birthday", "passport"]
-                  },
-                  "consent": {
-                      "type": "object",
-                      "properties": {
-                          "received_at": {"type": "string"},
-                          "was_received": {"type": "boolean"},
-                          "responsibility_flag": {"type": "boolean"}
-                      },
-                      "required": ["received_at", "was_received", "responsibility_flag"]
-                  }
-              },
-              "required": ["inn", "person", "consent"]
-          },
-          "from": {"type": "integer"}
-      },
-      "required": ["request", "from"]
-  }
-  ```
+## 5. `api.logs`
+**Описание:** Список логов при работе сервиса.  
+**Назначение:** Хранит логи событий сервиса с указанием уровня (ERROR, WARNING, INFO), сообщения, контекста и других данных.  
+**Поля:**
+- `log_key` — Первичный ключ.
+- `message_level` — Уровень сообщения (ERROR, WARNING, INFO).
+- `message` — Текст сообщения.
+- `function_name` — Имя функции, вызвавшей лог.
+- `context` — Дополнительный контекст в формате JSONB.
+- `error_code` — Код ошибки (если применимо).
+- `created_at` — Дата и время создания записи.
+
+## 6. `api.methods`
+**Описание:** Список методов сервиса.  
+**Назначение:** Хранит информацию о методах API, их описания, схемы запросов и настройки обработки.  
+**Поля:**
+- `method_key` — Первичный ключ.
+- `method_name` — Имя метода (допустимы только латинские буквы, цифры и подчёркивания).
+- `title` — Краткое описание метода.
+- `created_on` — Дата и время создания записи.
+- `description` — Полное описание метода.
+- `html_description` — Описание метода в формате HTML для вывода в API.
+- `request_json_schema` — JSON-схема для проверки запроса.
+- `require_request_body` — Требуется ли тело запроса (1 — да, 0 — GET-запрос).
+- `test_form__show_file_upload_input` — Показывать поле загрузки файла на тестовой форме (0/1).
+- `request_body_must_be_json` — Требуется ли валидный JSON в теле запроса.
+- `response_type` — Формат ответа (например, `eis` или NULL).
+
+## 7. `api.method_example`
+**Описание:** Список примеров для методов.  
+**Назначение:** Хранит примеры запросов для методов, которые можно использовать в тестовой форме.  
+**Поля:**
+- `method_example_key` — Первичный ключ.
+- `method_key` — Ссылка на метод (связь с `methods`).
+- `created_on` — Дата и время создания записи.
+- `json_example` — Тело примера в формате JSON.
+- `example_name` — Название примера (допустимы латинские буквы, цифры, подчёркивания).
+- `active` — Активность записи (1 — активно, 0 — неактивно).
+
+## 8. `api.method_request_func`
+**Описание:** Список функций, выполняемых в процессе работы метода.  
+**Назначение:** Хранит функции, которые выполняются на разных этапах выполнения метода, с указанием типа функции и подключения.  
+**Поля:**
+- `method_request_func_key` — Первичный ключ.
+- `created_on` — Дата и время создания записи.
+- `method_request_func_name` — Имя функции.
+- `method_request_func_type_key` — Тип функции (связь с `method_request_func_type`).
+- `external_connect_key` — Ключ соединения (связь с `external_connect` или NULL, если используется текущая БД).
+- `method_key` — Ключ метода (связь с `methods`).
+- `return_as_run_data` — Возвращать ли результат в узле `run_data` (1 — да, 0 — нет).
+
+## 9. `api.method_request_func_type`
+**Описание:** Список типов функций.  
+**Назначение:** Хранит типы функций, выполняемых на разных этапах работы метода.  
+**Поля:**
+- `method_request_func_type_key` — Первичный ключ.
+- `type_name` — Имя типа функции (на латинице).
+- `title` — Описание типа функции.
+- `created_on` — Дата и время создания записи.
+
+## 10. `api.method_setting`
+**Описание:** Список настроек методов в зависимости от типа базы данных (DEV, WORK).  
+**Назначение:** Хранит настройки методов, такие как активность, логирование запросов/ответов и эмуляция ответов.  
+**Поля:**
+- `method_setting_key` — Первичный ключ.
+- `db_type` — Тип базы данных (DEV, WORK, PREDRELEASE).
+- `method_key` — Ключ метода (связь с `methods`).
+- `active` — Активность метода для данного типа БД (1 — активно, 0 — неактивно).
+- `log_method_request` — Логировать тело запроса (1 — да, 0 — нет).
+- `log_method_response` — Логировать ответ метода (1 — да, 0 — нет).
+- `emulate_response` — Эмулировать ответ API (1 — да, 0 — нет).
+- `emulate_response_body` — Эмулированное тело ответа.
+
+## 11. `api.request_log`
+**Описание:** Лог запросов методов.  
+**Назначение:** Хранит информацию о запросах к методам сервиса для отладки и анализа.  
+**Поля:**
+- `request_log_key` — Первичный ключ.
+- `create_date` — Дата и время создания записи.
+- `method_key` — Ключ метода (связь с `methods`).
+- `request` — Тело запроса.
+- `run_result` — Результат выполнения запроса (числовой код).
+- `run_result_str` — Результат выполнения запроса (строка).
+- `service_request_body` — Тело запроса к сервису.
+- `service_post` — POST-параметры в формате JSON.
+- `service_request_url` — URL запроса к сервису.
+- `method_name` — Имя метода.
+
+## 12. `api.service_request_log`
+**Описание:** Список запросов к сервису (для отладки).  
+**Назначение:** Хранит информацию о запросах к внешним сервисам для целей отладки.  
+**Поля:**
+- `service_request_log_key` — Первичный ключ.
+- `created_on` — Дата и время создания записи.
+- `request_url` — URL запроса.
+- `request_body` — Тело запроса.
+- `get_params` — GET-параметры.
+- `post_params` — POST-параметры.
   
   
   
- Запуск контейнера с постройкой
+
+========================================================
+
+  
+
+Запуск контейнера с постройкой
+
 docker-compose up --build
 
+  
+  
 
 Запуск контейнера без перестройки контейнера
+
 docker-compose up
 
+  
+  
 
 -- Постройка Docker контейнера
+
 docker build -t viva-api-u-php:latest .
 
+  
+
 Просмотреть список построенных контейнеров
+
 docker images
-REPOSITORY         TAG          IMAGE ID       CREATED         SIZE
-viva-api-u-php     latest       b3cf671c9aa7   6 minutes ago   542MB
+
+REPOSITORY TAG IMAGE ID CREATED SIZE
+
+viva-api-u-php latest b3cf671c9aa7 6 minutes ago 542MB
+
 ...
 
+  
+  
 
 -- Не помню
+
 docker tag viva-api-u-php:latest xtetis/viva-api-u-php:latest
 
+  
+  
 
 -- Авторизиция в dockerHub
+
 docker login
 
+  
+
 -- Пуш в dockerHub
+
 docker pull xtetis/viva-api-u-php:latest
+
 docker build -t xtetis/viva-api-u-php:latest -f Dockerfile.work .
 
+  
+  
 
--- Урл залитого контейнера 
+-- Урл залитого контейнера
+
 https://hub.docker.com/repository/docker/xtetis/viva-api-u-php/general
 
+  
+
 Для прода
+
 docker-compose -f /mydata/work/VIVA/web/api/docker-compose.work.yml up --build
+
+  
 
 docker-compose -f ./docker-compose.dev.yml up --build
 
-=====================================================================
+  
 
+=======================================================
+
+  
+  
 
 Это универсальный API для вивы
 
+  
+  
 
 docker buildx install
 
-# Build the image
+  
+
+### Build the image
+
 docker build -t xtetis/viva-api-u-php:latest -f Dockerfile.work .
 
-# (Optional) Build with buildx
+  
+
+### (Optional) Build with buildx
+
 docker buildx build -t xtetis/viva-api-u-php:latest -f Dockerfile.work .
 
-# Log in to Docker Hub
+  
+
+### Log in to Docker Hub
+
 docker login
 
-# Push the image
+  
+
+### Push the image
+
 docker push xtetis/viva-api-u-php:latest
 
+  
+  
+  
 
+### На бою обновить боевой контейнер
 
-# На бою обновить боевой контейнер
 docker compose -f ./docker-compose.work.yml pull
 
-# В директории с docker-compose.yml обновить контейнер
+  
+
+### В директории с docker-compose.yml обновить контейнер
+
 docker compose pull
+
 docker compose up -d
 
-# Опять запустить контейнер
+  
+
+### Опять запустить контейнер
+
 docker compose -f ./docker-compose.work.yml up
 
-# Или одной командой 
+  
+
+### Или одной командой
+
 docker compose -f ./docker-compose.work.yml pull && docker compose -f ./docker-compose.work.yml up
 
+  
+  
 
-# Если нужно запустить как демон
+### Если нужно запустить как демон
+
 docker compose -f ./docker-compose.work.yml pull && docker compose -f ./docker-compose.work.yml up -d
